@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "642392992746",
+    "firebase_url": "https://drinksapp-39163-default-rtdb.firebaseio.com",
+    "project_id": "drinksapp-39163",
+    "storage_bucket": "drinksapp-39163.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642392992746:android:82523393e67986203ea093",
+        "android_client_info": {
+          "package_name": "com.thesun.cafemanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYi6VnETXvshg4Iyt7nCwofjyFyCIkx1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642392992746:android:c7446ad9449007a03ea093",
+        "android_client_info": {
+          "package_name": "com.thesun.drinksapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYi6VnETXvshg4Iyt7nCwofjyFyCIkx1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
