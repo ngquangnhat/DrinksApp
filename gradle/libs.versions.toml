@@ -1,4 +1,5 @@
 [versions]
+accompanistNavigationAnimationVersion = "0.31.5-beta"
 accompanistPager = "0.30.1"
 agp = "8.5.2"
 coilCompose = "2.4.0"
@@ -19,11 +20,14 @@ ksp = "2.1.0-1.0.29"
 googleServices = "4.4.2"
 firebaseBom = "33.4.0"
 gson = "2.10.1"
+materialIconsExtended = "1.7.8"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+google-accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanistNavigationAnimationVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

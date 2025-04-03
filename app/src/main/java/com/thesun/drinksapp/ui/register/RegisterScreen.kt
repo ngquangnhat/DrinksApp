@@ -1,4 +1,4 @@
-package com.thesun.drinksapp.ui.login
+package com.thesun.drinksapp.ui.register
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -52,21 +52,21 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thesun.drinksapp.R
+import com.thesun.drinksapp.ui.login.LoginState
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
 import com.thesun.drinksapp.ui.theme.TextColorPrimary
 
 @Composable
-fun LoginScreen(
+fun RegisterScreen(
     navController: NavController,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    registerViewModel: RegisterViewModel = hiltViewModel()
 ) {
-    val loginState by loginViewModel.loginState.collectAsState()
-    LoginScreenUI(
-        onLogin = { email, password, isAdmin -> loginViewModel.login(email, password, isAdmin) },
-        onForgotPassword = { navController.navigate("forgot_password") },
-        onRegister = { navController.navigate("register") },
+    val loginState by registerViewModel.loginState.collectAsState()
+    RegisterScreenUI(
+        onRegister = { email, password, isAdmin -> registerViewModel.register(email, password, isAdmin) },
+        onLogin = { navController.navigate("login") },
         isLoading = loginState is LoginState.Loading
     )
     loginState?.let { state ->
@@ -84,10 +84,9 @@ fun LoginScreen(
 }
 
 @Composable
-internal fun LoginScreenUI(
-    onLogin: (email: String, password: String, isAdmin: Boolean) -> Unit,
-    onForgotPassword: () -> Unit,
-    onRegister: () -> Unit,
+internal fun RegisterScreenUI(
+    onRegister: (email: String, password: String, isAdmin: Boolean) -> Unit,
+    onLogin: () -> Unit,
     isLoading: Boolean
 ) {
     var email by remember { mutableStateOf("") }
@@ -180,15 +179,13 @@ internal fun LoginScreenUI(
                 modifier = Modifier.fillMaxWidth()
             )
             Column {
-                com.thesun.drinksapp.ui.register.RoleSelection(
-                    selectedRole = selectedRole,
-                    onRoleSelected = { selectedRole = it })
+                RoleSelection(selectedRole = selectedRole, onRoleSelected = { selectedRole = it })
             }
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    onLogin(
+                    onRegister(
                         email,
                         password,
                         selectedRole == context.getString(R.string.admin)
@@ -206,7 +203,7 @@ internal fun LoginScreenUI(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = context.getString(R.string.login),
+                    text = context.getString(R.string.register),
                     fontSize = 14.sp,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
@@ -214,17 +211,6 @@ internal fun LoginScreenUI(
                 )
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.forgot_password),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = ColorPrimaryDark,
-                modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        onForgotPassword()
-                    }
-            )
         }
         Box(
             modifier = Modifier
@@ -238,7 +224,7 @@ internal fun LoginScreenUI(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = stringResource(R.string.have_not_account),
+                    text = stringResource(R.string.have_account),
                     fontSize = 14.sp,
                     color = ColorPrimaryDark
                 )
@@ -246,12 +232,12 @@ internal fun LoginScreenUI(
                 Spacer(modifier = Modifier.width(6.dp))
 
                 Text(
-                    text = stringResource(R.string.register),
+                    text = stringResource(R.string.login),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextColorPrimary,
                     modifier = Modifier.clickable {
-                        onRegister()
+                        onLogin()
                     }
                 )
             }
@@ -304,10 +290,9 @@ fun RoleSelection(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreenUI(
-        onLogin = { _, _, _ -> },
-        onForgotPassword = {},
-        onRegister = {},
+    RegisterScreenUI(
+        onRegister = { _, _, _ -> },
+        onLogin = {},
         isLoading = false
     )
 }

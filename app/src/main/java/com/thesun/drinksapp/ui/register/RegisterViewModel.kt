@@ -1,16 +1,14 @@
-package com.thesun.drinksapp.ui.login
+package com.thesun.drinksapp.ui.register
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.User
 import com.thesun.drinksapp.prefs.DataStoreManager
+import com.thesun.drinksapp.ui.login.LoginState
 import com.thesun.drinksapp.utils.Constant
 import com.thesun.drinksapp.utils.StringUtil.isEmpty
 import com.thesun.drinksapp.utils.StringUtil.isValidEmail
@@ -20,18 +18,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-@SuppressLint("StaticFieldLeak")
 @HiltViewModel
-class LoginViewModel @Inject constructor(
+class RegisterViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
+
+    @SuppressLint("StaticFieldLeak")
     private val context = application.applicationContext
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val _loginState = MutableStateFlow<LoginState?>(null)
     val loginState: StateFlow<LoginState?> = _loginState
 
-    fun login(email: String, password: String, isAdmin: Boolean) {
+    fun register(email: String, password: String, isAdmin: Boolean) {
         if (isEmpty(email)) {
             _loginState.value = LoginState.Error(context.getString(R.string.msg_email_require))
             return
@@ -50,7 +48,7 @@ class LoginViewModel @Inject constructor(
         }
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            firebaseAuth.signInWithEmailAndPassword(email, password)
+            firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val user = firebaseAuth.currentUser
@@ -62,10 +60,11 @@ class LoginViewModel @Inject constructor(
                         }
                         _loginState.value = LoginState.Success
                     } else {
-                        _loginState.value = LoginState.Error("Lỗi")
+                        _loginState.value = LoginState.Error(context.getString(R.string.msg_login_error))
                     }
                 }
         }
 
     }
+
 }
