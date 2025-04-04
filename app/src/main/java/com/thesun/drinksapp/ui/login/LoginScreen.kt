@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thesun.drinksapp.R
+import com.thesun.drinksapp.prefs.DataStoreManager
+import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
@@ -72,7 +74,11 @@ fun LoginScreen(
     loginState?.let { state ->
         when (state) {
             is LoginState.Success -> {
-                navController.navigate("home")
+                if (user!!.isAdmin){
+                    navController.navigate("role_admin")
+                } else {
+                    navController.navigate("role_user")
+                }
             }
 
             is LoginState.Error -> {

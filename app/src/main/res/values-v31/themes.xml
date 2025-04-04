@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.DrinksApp" parent="android:Theme.Material.Light.NoActionBar" >
+        <item name="android:windowSplashScreenBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="Them.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bgMainColor</item>
+        <item name="postSplashScreenTheme">@style/Theme.DrinksApp</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/animated_logo</item>
+    </style>
+</resources>
