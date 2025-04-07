@@ -29,7 +29,7 @@ class RegisterViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<LoginState?>(null)
     val loginState: StateFlow<LoginState?> = _loginState
 
-    fun register(email: String, password: String, isAdmin: Boolean) {
+    fun register(email: String, password: String, confirmPassword: String, isAdmin: Boolean) {
         if (isEmpty(email)) {
             _loginState.value = LoginState.Error(context.getString(R.string.msg_email_require))
             return
@@ -38,12 +38,20 @@ class RegisterViewModel @Inject constructor(
             _loginState.value = LoginState.Error(context.getString(R.string.msg_password_require))
             return
         }
+        if (isEmpty(confirmPassword)) {
+            _loginState.value = LoginState.Error(context.getString(R.string.msg_confirm_password_require_invalid))
+            return
+        }
         if (!isValidEmail(email)) {
             _loginState.value = LoginState.Error(context.getString(R.string.msg_email_invalid))
             return
         }
         if (isAdmin && !email.contains(Constant.ADMIN_EMAIL_FORMAT)) {
             _loginState.value = LoginState.Error(context.getString(R.string.msg_email_invalid_user))
+            return
+        }
+        if (password!=confirmPassword) {
+            _loginState.value = LoginState.Error(context.getString(R.string.msg_password_invalid))
             return
         }
         _loginState.value = LoginState.Loading

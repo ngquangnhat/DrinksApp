@@ -66,23 +66,32 @@ fun RegisterScreen(
 ) {
     val loginState by registerViewModel.loginState.collectAsState()
     RegisterScreenUI(
-        onRegister = { email, password, isAdmin -> registerViewModel.register(email, password, isAdmin) },
+        onRegister = { email, password, confirmPassword, isAdmin ->
+            registerViewModel.register(
+                email,
+                password,
+                confirmPassword,
+                isAdmin
+            )
+        },
         onLogin = { navController.navigate("login") },
         isLoading = loginState is LoginState.Loading
     )
     loginState?.let { state ->
         when (state) {
             is LoginState.Success -> {
-                if (user!!.isAdmin){
+                if (user!!.isAdmin) {
                     navController.navigate("role_admin")
                 } else {
                     navController.navigate("role_user")
                 }
+                Toast.makeText(LocalContext.current, LocalContext.current.getString(R.string.msg_register_successfully), Toast.LENGTH_SHORT).show()
             }
 
             is LoginState.Error -> {
                 Toast.makeText(LocalContext.current, state.message, Toast.LENGTH_SHORT).show()
             }
+
             else -> Unit
         }
     }
@@ -90,12 +99,13 @@ fun RegisterScreen(
 
 @Composable
 internal fun RegisterScreenUI(
-    onRegister: (email: String, password: String, isAdmin: Boolean) -> Unit,
+    onRegister: (email: String, password: String, confirmPassword: String, isAdmin: Boolean) -> Unit,
     onLogin: () -> Unit,
     isLoading: Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     var selectedRole by remember { mutableStateOf(context.getString(R.string.user)) }
     Box(
@@ -134,6 +144,7 @@ internal fun RegisterScreenUI(
                         color = ColorAccent
                     )
                 },
+                maxLines = 1,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = androidx.compose.ui.text.input.ImeAction.Next,
                     keyboardType = KeyboardType.Email
@@ -165,13 +176,59 @@ internal fun RegisterScreenUI(
                         color = ColorAccent
                     )
                 },
+                maxLines = 1,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     if (password.isNotEmpty()) {
-                        val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val image =
+                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                            Icon(
+                                imageVector = image,
+                                contentDescription = "Toggle password visibility"
+                            )
+                        }
+                    }
+                },
+                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TextColorHeading,
+                    unfocusedBorderColor = ColorAccent,
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = context.getString(R.string.confirm_password),
+                fontSize = 12.sp,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(5.dp))
+            var confirmPasswordVisible by remember { mutableStateOf(false) }
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                placeholder = {
+                    Text(
+                        context.getString(R.string.hint_confirm_password),
+                        fontSize = 14.sp,
+                        color = ColorAccent
+                    )
+                },
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    if (confirmPassword.isNotEmpty()) {
+                        val image =
+                            if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Icon(
+                                imageVector = image,
+                                contentDescription = "Toggle password visibility"
+                            )
                         }
                     }
                 },
@@ -193,6 +250,7 @@ internal fun RegisterScreenUI(
                     onRegister(
                         email,
                         password,
+                        confirmPassword,
                         selectedRole == context.getString(R.string.admin)
                     )
                 },
@@ -200,7 +258,7 @@ internal fun RegisterScreenUI(
                     .fillMaxWidth(),
                 enabled = email.isNotEmpty() && password.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (email.isNotEmpty() && password.isNotEmpty()) ColorPrimaryDark else Color(
+                    containerColor = if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) ColorPrimaryDark else Color(
                         0xffCACACA
                     ),
                     contentColor = Color.White
@@ -296,7 +354,7 @@ fun RoleSelection(
 @Composable
 fun LoginScreenPreview() {
     RegisterScreenUI(
-        onRegister = { _, _, _ -> },
+        onRegister = { _, _, _, _ -> },
         onLogin = {},
         isLoading = false
     )

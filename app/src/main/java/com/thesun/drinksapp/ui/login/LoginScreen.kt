@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -52,7 +53,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thesun.drinksapp.R
-import com.thesun.drinksapp.prefs.DataStoreManager
 import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
@@ -136,8 +136,9 @@ internal fun LoginScreenUI(
                         color = ColorAccent
                     )
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = androidx.compose.ui.text.input.ImeAction.Next,
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
                     keyboardType = KeyboardType.Email
                 ),
                 textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
@@ -167,7 +168,10 @@ internal fun LoginScreenUI(
                         color = ColorAccent
                     )
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Password),
+                maxLines = 1,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     if (password.isNotEmpty()) {

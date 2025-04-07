@@ -205,4 +205,9 @@
     <string name="msg_add_category_success">Thêm thể loại thành công</string>
     <string name="msg_edit_drink_success">Chỉnh sửa đồ uống thành công</string>
     <string name="msg_add_drink_success">Thêm đồ uống thành công</string>
+    <string name="confirm_password">Nhập lại mật khẩu</string>
+    <string name="hint_confirm_password">Nhập lại mật khẩu của bạn</string>
+    <string name="msg_password_invalid">Mật khẩu không trùng khớp</string>
+    <string name="msg_confirm_password_require_invalid">Vui lòng nhập lại mật khẩu của bạn</string>
+    <string name="msg_register_successfully">"Đăng ký thành công "</string>
 </resources>

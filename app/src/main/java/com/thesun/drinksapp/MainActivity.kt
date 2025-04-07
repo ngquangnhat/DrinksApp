@@ -33,15 +33,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             DrinksAppTheme {
-                Scaffold { innerPadding ->
                     MainNavigation(
                         modifier = Modifier
-                            .padding(innerPadding)
                             .fillMaxSize()
                             .background(Color.White),
                         navController = navController
                     )
-                }
             }
 
         }

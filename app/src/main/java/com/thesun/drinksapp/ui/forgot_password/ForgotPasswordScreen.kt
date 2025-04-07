@@ -113,6 +113,7 @@ fun ForgotPasswordScreenUI(
                         color = ColorAccent
                     )
                 },
+                maxLines = 1,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = androidx.compose.ui.text.input.ImeAction.Next,
                     keyboardType = KeyboardType.Email
