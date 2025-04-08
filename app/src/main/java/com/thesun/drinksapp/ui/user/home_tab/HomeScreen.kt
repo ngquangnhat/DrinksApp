@@ -1,12 +1,17 @@
 package com.thesun.drinksapp.ui.user.home_tab
 
 import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,9 +20,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,40 +43,55 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Category
 import com.thesun.drinksapp.data.model.Drink
+import com.thesun.drinksapp.data.model.Filter
+import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
-    val drinks by viewModel.filteredDrinks.collectAsState()
+    val drinks by viewModel.allDrinks.collectAsState()
     val keyword by viewModel.searchKeyword.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
-    Log.d("HomeScreen", "Categories: $categories")
-    Log.d("HomeScreen", "Drinks: $drinks")
+    Log.d("HomeScreen", "drinks: $drinks")
 
     if (isLoading) {
         Box(
@@ -77,31 +102,35 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
             CircularProgressIndicator(color = ColorPrimaryDark)
         }
     } else {
+        val context = LocalContext.current
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(10.dp)
         ) {
-        SearchBar(keyword) {
-            viewModel.onSearchKeywordChange(it)
-        }
-
-        BannerImage()
-
-        Spacer(Modifier.height(12.dp))
-
-        CategoryTabs(categories)
-
-        FilterRow()
-
-        Spacer(Modifier.height(8.dp))
-
-        LazyColumn {
-            items(drinks) { drink ->
-                DrinkItem(drink)
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            SearchBar(keyword) {
+                viewModel.onSearchKeywordChange(it)
             }
-        }
+            DrinkBanner(
+                drinks.filter { it.isFeatured },
+                onClickDrink = {}
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            CategoryTabScreen(
+                categories,
+                drinks,
+                listOf(
+                    Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
+                    Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
+                    Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
+                    Filter(Filter.TYPE_FILTER_PROMOTION, context.getString(R.string.filter_promotion)),
+                )
+            )
+
+            Spacer(Modifier.height(8.dp))
+
         }
     }
 }
@@ -115,76 +144,240 @@ fun SearchBar(keyword: String, onValueChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        placeholder = { Text("Hôm nay bạn muốn uống gì?") },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        placeholder = { Text("Hôm nay bạn muốn uống gì?", fontSize = 14.sp) },
+        trailingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         shape = RoundedCornerShape(20.dp),
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Color.Gray,
-            unfocusedBorderColor = Color.LightGray
+            focusedBorderColor = ColorPrimaryDark,
+            unfocusedBorderColor = ColorAccent
         )
     )
 }
 
 @Composable
-fun BannerImage() {
-    Image(
-        painter = painterResource(id = R.drawable.thumb_splash),
-        contentDescription = null,
+fun DrinkBanner(
+    drinkList: List<Drink>,
+    onClickDrink: (Drink) -> Unit
+) {
+    if (drinkList.isEmpty()) return
+
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { drinkList.size }
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage < drinkList.size - 1) {
+            coroutineScope.launch {
+                delay(3000)
+                pagerState.animateScrollToPage(
+                    pagerState.currentPage + 1,
+                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+                )
+            }
+        } else {
+            coroutineScope.launch {
+                delay(3000)
+                pagerState.animateScrollToPage(
+                    0,
+                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+                )
+            }
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp)
-            .clip(RoundedCornerShape(12.dp)),
-        contentScale = ContentScale.Crop
-    )
+            .padding(vertical = 10.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.LightGray)
+            .height(150.dp)
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            pageSize = PageSize.Fill,
+            modifier = Modifier
+                .fillMaxSize()
+        ) { page ->
+            val drink = drinkList[page]
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable { onClickDrink(drink) }
+            ) {
+                AsyncImage(
+                    model = drink.banner,
+                    contentDescription = drink.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(drinkList.size) { index ->
+                val isSelected = pagerState.currentPage == index
+
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .padding(1.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(if (isSelected) 10.dp else 6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) ColorPrimaryDark else ColorAccent
+                            )
+                    )
+                }
+            }
+        }
+
+    }
 }
 
-@Composable
-fun CategoryTabs(categories: List<Category>) {
-    var selectedTab by remember { mutableIntStateOf(0) }
 
-    ScrollableTabRow(
-        selectedTabIndex = selectedTab,
-        containerColor = Color.Transparent,
-        contentColor = ColorPrimaryDark
-    ) {
-        categories.forEachIndexed { index, category ->
-            Tab(
-                selected = selectedTab == index,
-                onClick = { selectedTab = index },
-                text = { Text(category.name ?: "") }
+@Composable
+fun CategoryTabScreen(
+    listCategory: List<Category>,
+    allDrinks: List<Drink>,
+    filters: List<Filter>,
+    modifier: Modifier = Modifier
+) {
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(
+        pageCount = { listCategory.size }
+    )
+    LaunchedEffect(selectedTabIndex) {
+        pagerState.animateScrollToPage(selectedTabIndex)
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        selectedTabIndex = pagerState.currentPage
+    }
+
+    Column(modifier = modifier) {
+        ScrollableTabRow(
+            selectedTabIndex = selectedTabIndex,
+            contentColor = ColorPrimaryDark,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    color = ColorPrimaryDark,
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
+                )
+            }
+        ) {
+            listCategory.forEachIndexed { index, category ->
+                Tab(
+                    selected = index == selectedTabIndex,
+                    onClick = { selectedTabIndex = index },
+                    selectedContentColor = ColorPrimaryDark,
+                    unselectedContentColor = ColorAccent,
+                    text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp) } }
+                )
+            }
+        }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) { pageIndex ->
+
+            val drinks = allDrinks.filter { it.categoryId.toInt() == pageIndex }
+            Log.d("HomeScreen", "drinks: $drinks")
+
+            var selectedFilter by remember { mutableStateOf(filters.first()) }
+
+            val drinksFiltered = remember (selectedFilter) {
+                when (selectedFilter.id) {
+                    Filter.TYPE_FILTER_ALL -> drinks
+                    Filter.TYPE_FILTER_PRICE -> drinks.sortedByDescending { it.realPrice }
+                    Filter.TYPE_FILTER_PROMOTION -> drinks.filter { it.sale > 0 }
+                    Filter.TYPE_FILTER_RATE -> drinks.sortedBy { it.rate }
+                    else -> drinks
+                }
+            }
+
+            DrinkTabPage(
+                filters = filters.map {
+                    it.copy(isSelected = it.id == selectedFilter.id)
+                },
+                onFilterSelected = { selectedFilter = it },
+                drinks = drinksFiltered
             )
         }
     }
+
 }
 
 @Composable
-fun FilterRow() {
-    Row(
+fun DrinkTabPage(
+    filters: List<Filter>,
+    onFilterSelected: (Filter) -> Unit,
+    drinks: List<Drink>
+) {
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .fillMaxSize()
+            .background(Color.White)
     ) {
-        listOf("Tất cả", "Xếp hạng", "Giá", "Khuyến mãi").forEach {
-            FilterChip(text = it)
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            items(filters) { filter ->
+                FilterItem(
+                    filter = filter,
+                    onClick = { onFilterSelected(filter) }
+                )
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(drinks) { drink ->
+                DrinkItem(drink)
+            }
         }
     }
 }
 
 @Composable
-fun FilterChip(text: String) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = Color(0xFFE0E0E0),
+fun FilterItem(filter: Filter, onClick: () -> Unit) {
+    val backgroundColor = if (filter.isSelected) Color.Black else Color.LightGray
+    val textColor = if (filter.isSelected) Color.White else Color.Black
+
+    Box(
         modifier = Modifier
-            .height(36.dp)
-            .wrapContentWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Text(text = text, style = MaterialTheme.typography.bodyMedium)
-        }
+        Text(text = filter.name ?: "", color = textColor)
     }
 }
+
+
 @Composable
 fun DrinkItem(drink: Drink) {
     Row(

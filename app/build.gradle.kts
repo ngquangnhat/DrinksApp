@@ -88,8 +88,10 @@ dependencies {
 
     //Coil
     implementation(libs.coil.compose)
-    //Cicle indicator
-    implementation(libs.accompanist.pager)
+    // Accompanist Pager
+    implementation(libs.accompanist.pager.v0320)
+    implementation(libs.accompanist.pager.indicators)
+
     //Gson
     implementation(libs.gson)
 

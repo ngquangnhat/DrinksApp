@@ -1,8 +1,10 @@
 [versions]
 accompanistNavigationAnimationVersion = "0.31.5-beta"
 accompanistPager = "0.30.1"
+accompanistPagerVersion = "0.32.0"
 agp = "8.5.2"
 coilCompose = "2.4.0"
+foundationVersion = "1.7.8"
 kotlin = "2.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -23,7 +25,8 @@ gson = "2.10.1"
 materialIconsExtended = "1.7.8"
 
 [libraries]
-accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
+accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerVersion" }
+accompanist-pager-v0320 = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPagerVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }

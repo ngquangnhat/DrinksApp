@@ -22,6 +22,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _allDrinks = MutableStateFlow<List<Drink>>(emptyList())
+    val allDrinks: StateFlow<List<Drink>> = _allDrinks
     private val _searchKeyword = MutableStateFlow("")
     val searchKeyword: StateFlow<String> = _searchKeyword
 
