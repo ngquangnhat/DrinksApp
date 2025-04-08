@@ -3,6 +3,7 @@ package com.thesun.drinksapp.data.model
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.google.firebase.database.PropertyName
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
@@ -15,7 +16,11 @@ data class Drink(
     var price: Int = 0,
     var image: String? = null,
     var banner: String? = null,
+    @get:PropertyName("category_id")
+    @set:PropertyName("category_id")
     var categoryId: Long = 0,
+    @get:PropertyName("category_name")
+    @set:PropertyName("category_name")
     var categoryName: String? = null,
     var sale: Int = 0,
     var isFeatured: Boolean = false,

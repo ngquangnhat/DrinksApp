@@ -83,6 +83,7 @@ import com.thesun.drinksapp.data.model.Filter
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -91,7 +92,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
     val keyword by viewModel.searchKeyword.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
-    Log.d("HomeScreen", "drinks: $drinks")
+    val selectedFilter by viewModel.selectedFilters.collectAsState()
 
     if (isLoading) {
         Box(
@@ -125,8 +126,16 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                     Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
                     Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
                     Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
-                    Filter(Filter.TYPE_FILTER_PROMOTION, context.getString(R.string.filter_promotion)),
-                )
+                    Filter(
+                        Filter.TYPE_FILTER_PROMOTION,
+                        context.getString(R.string.filter_promotion)
+                    ),
+                ),
+                onFilterSelected = { categoryId, newFilter ->
+                    viewModel.updateFilter(categoryId, newFilter)
+                },
+                selectedFiltersFlow = viewModel.selectedFilters
+
             )
 
             Spacer(Modifier.height(8.dp))
@@ -253,35 +262,39 @@ fun CategoryTabScreen(
     listCategory: List<Category>,
     allDrinks: List<Drink>,
     filters: List<Filter>,
+    onFilterSelected: (Long, Filter) -> Unit,
+    selectedFiltersFlow: StateFlow<Map<Long, Filter>>,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val pagerState = rememberPagerState(
         pageCount = { listCategory.size }
     )
-    LaunchedEffect(selectedTabIndex) {
-        pagerState.animateScrollToPage(selectedTabIndex)
-    }
-
-    LaunchedEffect(pagerState.currentPage) {
-        selectedTabIndex = pagerState.currentPage
-    }
+    val selectedFilters by selectedFiltersFlow.collectAsState()
 
     Column(modifier = modifier) {
+        val coroutineScope = rememberCoroutineScope()
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
             contentColor = ColorPrimaryDark,
             indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    color = ColorPrimaryDark,
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
-                )
+                if (tabPositions.isNotEmpty() && selectedTabIndex < tabPositions.size) {
+                    TabRowDefaults.Indicator(
+                        color = ColorPrimaryDark,
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
+                    )
+                }
             }
         ) {
             listCategory.forEachIndexed { index, category ->
                 Tab(
                     selected = index == selectedTabIndex,
-                    onClick = { selectedTabIndex = index },
+                    onClick = {
+                        selectedTabIndex = index
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
                     selectedContentColor = ColorPrimaryDark,
                     unselectedContentColor = ColorAccent,
                     text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp) } }
@@ -294,18 +307,19 @@ fun CategoryTabScreen(
                 .fillMaxWidth()
                 .weight(1f)
         ) { pageIndex ->
+            val categoryId = listCategory[pageIndex].id
+            Log.d("TAG", "CategoryTabScreen: $categoryId")
+            Log.d("TAG", "CategoryTabScreen: $allDrinks")
+            val drinks = allDrinks.filter { it.categoryId == categoryId }
+            Log.d("TAG", "CategoryTabScreen: $drinks")
+            val selectedFilter = selectedFilters[categoryId] ?: Filter(id = Filter.TYPE_FILTER_ALL)
 
-            val drinks = allDrinks.filter { it.categoryId.toInt() == pageIndex }
-            Log.d("HomeScreen", "drinks: $drinks")
-
-            var selectedFilter by remember { mutableStateOf(filters.first()) }
-
-            val drinksFiltered = remember (selectedFilter) {
+            val drinksFiltered = remember(selectedFilter, drinks) {
                 when (selectedFilter.id) {
                     Filter.TYPE_FILTER_ALL -> drinks
-                    Filter.TYPE_FILTER_PRICE -> drinks.sortedByDescending { it.realPrice }
+                    Filter.TYPE_FILTER_PRICE -> drinks.sortedBy { it.realPrice }
                     Filter.TYPE_FILTER_PROMOTION -> drinks.filter { it.sale > 0 }
-                    Filter.TYPE_FILTER_RATE -> drinks.sortedBy { it.rate }
+                    Filter.TYPE_FILTER_RATE -> drinks.sortedByDescending { it.rate }
                     else -> drinks
                 }
             }
@@ -314,7 +328,9 @@ fun CategoryTabScreen(
                 filters = filters.map {
                     it.copy(isSelected = it.id == selectedFilter.id)
                 },
-                onFilterSelected = { selectedFilter = it },
+                onFilterSelected = { newFilter ->
+                    onFilterSelected(categoryId, newFilter)
+                },
                 drinks = drinksFiltered
             )
         }

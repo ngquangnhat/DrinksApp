@@ -41,9 +41,9 @@ class BottomCartViewModel @Inject constructor(
 //        ice = "Đá đầy",
 //        toppingIds = "1,2",
 //        note = "Không đá",
-//        rating = listOf(
-//            Rating(rate = 5.0, review = "Rất ngon!"),
-//            Rating(rate = 4.0, review = "Tạm ổn")
+//        rating = hashMapOf(
+//            "user123" to Rating(rate = 5.0, review = "Rất ngon!"),
+//            "user456" to Rating(rate = 4.0, review = "Tạm ổn")
 //        )
 //    )
 
