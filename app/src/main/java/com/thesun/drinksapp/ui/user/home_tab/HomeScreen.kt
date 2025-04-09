@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,10 +33,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -73,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -80,6 +85,7 @@ import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Category
 import com.thesun.drinksapp.data.model.Drink
 import com.thesun.drinksapp.data.model.Filter
+import com.thesun.drinksapp.ui.theme.BgMainColor
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import kotlinx.coroutines.delay
@@ -92,7 +98,6 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
     val keyword by viewModel.searchKeyword.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
-    val selectedFilter by viewModel.selectedFilters.collectAsState()
 
     if (isLoading) {
         Box(
@@ -104,41 +109,46 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
         }
     } else {
         val context = LocalContext.current
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp)
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
         ) {
-            SearchBar(keyword) {
-                viewModel.onSearchKeywordChange(it)
+            item {
+                SearchBar(keyword) {
+                    viewModel.onSearchKeywordChange(it)
+                }
             }
-            DrinkBanner(
-                drinks.filter { it.isFeatured },
-                onClickDrink = {}
-            )
 
-            Spacer(Modifier.height(12.dp))
+            item {
+                DrinkBanner(
+                    drinks.filter { it.isFeatured },
+                    onClickDrink = {}
+                )
 
-            CategoryTabScreen(
-                categories,
-                drinks,
-                listOf(
-                    Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
-                    Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
-                    Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
-                    Filter(
-                        Filter.TYPE_FILTER_PROMOTION,
-                        context.getString(R.string.filter_promotion)
+            }
+
+            item {
+                CategoryTabScreen(
+                    categories,
+                    drinks,
+                    listOf(
+                        Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
+                        Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
+                        Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
+                        Filter(
+                            Filter.TYPE_FILTER_PROMOTION,
+                            context.getString(R.string.filter_promotion)
+                        ),
                     ),
-                ),
-                onFilterSelected = { categoryId, newFilter ->
-                    viewModel.updateFilter(categoryId, newFilter)
-                },
-                selectedFiltersFlow = viewModel.selectedFilters
+                    onFilterSelected = { categoryId, newFilter ->
+                        viewModel.updateFilter(categoryId, newFilter)
+                    },
+                    selectedFiltersFlow = viewModel.selectedFilters,
+                )
 
-            )
+            }
 
-            Spacer(Modifier.height(8.dp))
 
         }
     }
@@ -264,7 +274,6 @@ fun CategoryTabScreen(
     filters: List<Filter>,
     onFilterSelected: (Long, Filter) -> Unit,
     selectedFiltersFlow: StateFlow<Map<Long, Filter>>,
-    modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val pagerState = rememberPagerState(
@@ -272,11 +281,13 @@ fun CategoryTabScreen(
     )
     val selectedFilters by selectedFiltersFlow.collectAsState()
 
-    Column(modifier = modifier) {
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top) {
         val coroutineScope = rememberCoroutineScope()
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
             contentColor = ColorPrimaryDark,
+            modifier = Modifier.fillMaxWidth(),
+            edgePadding = 0.dp,
             indicator = { tabPositions ->
                 if (tabPositions.isNotEmpty() && selectedTabIndex < tabPositions.size) {
                     TabRowDefaults.Indicator(
@@ -297,6 +308,7 @@ fun CategoryTabScreen(
                     },
                     selectedContentColor = ColorPrimaryDark,
                     unselectedContentColor = ColorAccent,
+                    modifier = Modifier.width(130.dp),
                     text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp) } }
                 )
             }
@@ -305,13 +317,9 @@ fun CategoryTabScreen(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
         ) { pageIndex ->
             val categoryId = listCategory[pageIndex].id
-            Log.d("TAG", "CategoryTabScreen: $categoryId")
-            Log.d("TAG", "CategoryTabScreen: $allDrinks")
             val drinks = allDrinks.filter { it.categoryId == categoryId }
-            Log.d("TAG", "CategoryTabScreen: $drinks")
             val selectedFilter = selectedFilters[categoryId] ?: Filter(id = Filter.TYPE_FILTER_ALL)
 
             val drinksFiltered = remember(selectedFilter, drinks) {
@@ -353,8 +361,7 @@ fun DrinkTabPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(filters) { filter ->
                 FilterItem(
@@ -365,10 +372,7 @@ fun DrinkTabPage(
         }
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth().height(500.dp)
         ) {
             items(drinks) { drink ->
                 DrinkItem(drink)
@@ -393,51 +397,91 @@ fun FilterItem(filter: Filter, onClick: () -> Unit) {
     }
 }
 
-
 @Composable
 fun DrinkItem(drink: Drink) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(top = 10.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Image(
-            painter = rememberImagePainter(drink.image),
-            contentDescription = drink.name,
-            modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = drink.name ?: "", style = MaterialTheme.typography.titleMedium)
-            Text(text = drink.description ?: "", style = MaterialTheme.typography.bodyMedium)
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "${drink.price}vnd",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = rememberAsyncImagePainter(drink.image),
+                contentDescription = drink.name,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier
+                    .offset(y = (-10).dp)
+                    .background(color = Color(0xFFFFF8E1), shape = RoundedCornerShape(10.dp))
+                    .padding(horizontal = 4.dp, vertical = 1.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = Color(0xFFFFC107),
+                    modifier = Modifier.size(14.dp)
                 )
-                if (drink.realPrice != null && drink.realPrice < drink.price) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${drink.realPrice}vnd",
-                        style = MaterialTheme.typography.bodyLarge.copy(textDecoration = TextDecoration.LineThrough),
-                        color = Color.Gray
-                    )
-                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = drink.rate.toString(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(Icons.Default.Star, contentDescription = null, tint = Color.Yellow)
-            Text(text = drink.rate.toString(), style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = drink.name ?: "",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = drink.description ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "${drink.price}vnd",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
+            if (drink.realPrice != null && drink.realPrice > drink.price) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${drink.realPrice}vnd",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        textDecoration = TextDecoration.LineThrough,
+                        color = Color.Gray
+                    )
+                )
+            }
         }
     }
+
+    HorizontalDivider(
+        color = BgMainColor,
+        thickness = 1.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+    )
+
 }
+
+
 
 
 

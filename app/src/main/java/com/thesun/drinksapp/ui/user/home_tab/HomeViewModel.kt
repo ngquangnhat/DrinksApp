@@ -21,7 +21,6 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val drinkRepository: DrinkRepository,
     private val categoryRepository: CategoryRepository,
-    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _allDrinks = MutableStateFlow<List<Drink>>(emptyList())
@@ -45,23 +44,11 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    fun getSelectedFilterForCategory(categoryId: Long): Filter {
-        return _selectedFilters.value[categoryId] ?: Filter(id = Filter.TYPE_FILTER_ALL)
-    }
-
-    val filteredDrinks: StateFlow<List<Drink>> =
-        combine(_allDrinks, _searchKeyword) { drinks, keyword ->
-            if (keyword.isBlank()) {
-                drinks.filter { it.isFeatured }
-            } else {
-                drinks.filter {
-                    it.isFeatured && it.name?.contains(keyword, ignoreCase = true) == true
-                }
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private var drinkListener: ValueEventListener? = null
     private var categoryListener: ValueEventListener? = null
+    private var originalDrinks: List<Drink> = emptyList()
+
 
     init {
         fetchDrinks()
@@ -70,6 +57,7 @@ class HomeViewModel @Inject constructor(
 
     fun onSearchKeywordChange(keyword: String) {
         _searchKeyword.value = keyword
+        applySearchFilter()
     }
 
     private fun fetchDrinks() {
@@ -79,7 +67,8 @@ class HomeViewModel @Inject constructor(
                 val drinks = snapshot.children.mapNotNull {
                     it.getValue(Drink::class.java)
                 }
-                _allDrinks.value = drinks
+                originalDrinks = drinks
+                applySearchFilter()
                 _loading.value = false
             }
 
@@ -105,6 +94,14 @@ class HomeViewModel @Inject constructor(
         }
 
         categoryRepository.getCategoryRef().addValueEventListener(categoryListener!!)
+    }
+    private fun applySearchFilter() {
+        val keyword = _searchKeyword.value.trim()
+        _allDrinks.value = if (keyword.isEmpty()) {
+            originalDrinks
+        } else {
+            originalDrinks.filter { it.name?.contains(keyword, ignoreCase = true) == true }
+        }
     }
 
 
