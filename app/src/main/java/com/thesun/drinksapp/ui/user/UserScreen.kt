@@ -7,6 +7,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,12 +50,14 @@ fun UserScreen(
     navController: NavHostController,
 ) {
     UserScreenUI(
-//        onGoToCard = { navController.navigate("cart") }
+        navMainController = navController,
+        onGoToCard = {  }
     )
 }
 
 @Composable
 fun UserScreenUI(
+    navMainController: NavHostController,
     onGoToCard: () -> Unit = {},
     ) {
 
@@ -127,7 +131,7 @@ fun UserScreenUI(
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(modifier = Modifier.background(Color.White).padding(paddingValues)) {
             NavHost(
                 navController = navController,
                 startDestination = BottomNavItem.Home.route,
@@ -143,7 +147,7 @@ fun UserScreenUI(
                         targetOffsetX = { -it })
                 }
             ) {
-                composable(BottomNavItem.Home.route) { HomeScreen(navController) }
+                composable(BottomNavItem.Home.route) { HomeScreen(navMainController) }
                 composable(BottomNavItem.Category.route) { HistoryTabScreen() }
                 composable(BottomNavItem.Profile.route) { ProfileTabScreen() }
             }

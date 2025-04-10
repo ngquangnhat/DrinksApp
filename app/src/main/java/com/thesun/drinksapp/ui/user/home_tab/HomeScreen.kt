@@ -1,20 +1,15 @@
 package com.thesun.drinksapp.ui.user.home_tab
 
-import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,23 +17,20 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -57,11 +49,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,9 +67,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Category
 import com.thesun.drinksapp.data.model.Drink
@@ -88,6 +74,7 @@ import com.thesun.drinksapp.data.model.Filter
 import com.thesun.drinksapp.ui.theme.BgMainColor
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
+import com.thesun.drinksapp.utils.Constant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -123,22 +110,24 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
             item {
                 DrinkBanner(
                     drinks.filter { it.isFeatured },
-                    onClickDrink = {}
+                    onClickDrink = {
+                        navController.navigate("drinkDetail/${it.id}")
+
+                    }
                 )
 
             }
 
             item {
                 CategoryTabScreen(
+                    navController,
                     categories,
                     drinks,
                     listOf(
                         Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
-                        Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
                         Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
-                        Filter(
-                            Filter.TYPE_FILTER_PROMOTION,
-                            context.getString(R.string.filter_promotion)
+                        Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
+                        Filter(Filter.TYPE_FILTER_PROMOTION, context.getString(R.string.filter_promotion)
                         ),
                     ),
                     onFilterSelected = { categoryId, newFilter ->
@@ -269,6 +258,7 @@ fun DrinkBanner(
 
 @Composable
 fun CategoryTabScreen(
+    navController: NavController,
     listCategory: List<Category>,
     allDrinks: List<Drink>,
     filters: List<Filter>,
@@ -281,7 +271,7 @@ fun CategoryTabScreen(
     )
     val selectedFilters by selectedFiltersFlow.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top) {
+    Column(modifier = Modifier.fillMaxSize().background(Color.White), verticalArrangement = Arrangement.Top) {
         val coroutineScope = rememberCoroutineScope()
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
@@ -308,8 +298,8 @@ fun CategoryTabScreen(
                     },
                     selectedContentColor = ColorPrimaryDark,
                     unselectedContentColor = ColorAccent,
-                    modifier = Modifier.width(130.dp),
-                    text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp) } }
+                    modifier = Modifier.width(130.dp).background(Color.White),
+                    text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold) } }
                 )
             }
         }
@@ -333,6 +323,7 @@ fun CategoryTabScreen(
             }
 
             DrinkTabPage(
+                navController = navController,
                 filters = filters.map {
                     it.copy(isSelected = it.id == selectedFilter.id)
                 },
@@ -348,6 +339,7 @@ fun CategoryTabScreen(
 
 @Composable
 fun DrinkTabPage(
+    navController: NavController,
     filters: List<Filter>,
     onFilterSelected: (Filter) -> Unit,
     drinks: List<Drink>
@@ -357,25 +349,37 @@ fun DrinkTabPage(
             .fillMaxSize()
             .background(Color.White)
     ) {
+        val coroutineScope = rememberCoroutineScope()
+        val listState = rememberLazyListState()
         LazyRow(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filters) { filter ->
+            itemsIndexed(filters) { index, filter ->
                 FilterItem(
                     filter = filter,
-                    onClick = { onFilterSelected(filter) }
+                    onClick = {
+                        onFilterSelected(filter)
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(index)
+                        }
+                    }
                 )
             }
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().height(500.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp)
         ) {
             items(drinks) { drink ->
-                DrinkItem(drink)
+                DrinkItem(drink){
+                    navController.navigate("drinkDetail/${drink.id}")
+                }
             }
         }
     }
@@ -383,26 +387,50 @@ fun DrinkTabPage(
 
 @Composable
 fun FilterItem(filter: Filter, onClick: () -> Unit) {
-    val backgroundColor = if (filter.isSelected) Color.Black else Color.LightGray
+    val backgroundColor = if (filter.isSelected) ColorPrimaryDark else Color.LightGray
     val textColor = if (filter.isSelected) Color.White else Color.Black
 
-    Box(
+    val icon = when (filter.id) {
+        Filter.TYPE_FILTER_ALL -> R.drawable.ic_filter_all
+        Filter.TYPE_FILTER_RATE -> R.drawable.ic_filter_rate
+        Filter.TYPE_FILTER_PRICE -> R.drawable.ic_filter_price
+        Filter.TYPE_FILTER_PROMOTION -> R.drawable.ic_filter_sell
+        else -> R.drawable.ic_filter_all
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
-        Text(text = filter.name ?: "", color = textColor)
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            tint = textColor,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = filter.name ?: "",
+            fontSize = 14.sp,
+            color = textColor
+        )
     }
 }
 
+
 @Composable
-fun DrinkItem(drink: Drink) {
+fun DrinkItem(drink: Drink, onClickDrink: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp),
+            .padding(top = 10.dp)
+            .clickable {
+                onClickDrink()
+            },
         verticalAlignment = Alignment.Top
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -440,13 +468,15 @@ fun DrinkItem(drink: Drink) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 10.dp),
         ) {
             Text(
                 text = drink.name ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = drink.description ?: "",
                 style = MaterialTheme.typography.bodySmall,
@@ -454,15 +484,17 @@ fun DrinkItem(drink: Drink) {
             )
         }
 
-        Column(horizontalAlignment = Alignment.End) {
+        Column(
+            modifier = Modifier.padding(top = 10.dp, end = 10.dp),
+            horizontalAlignment = Alignment.End) {
             Text(
-                text = "${drink.price}vnd",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                text = "${drink.price}"+ Constant.CURRENCY,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
             )
-            if (drink.realPrice != null && drink.realPrice > drink.price) {
-                Spacer(modifier = Modifier.height(4.dp))
+            if (drink.sale >= 0) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "${drink.realPrice}vnd",
+                    text = "${drink.realPrice}"+ Constant.CURRENCY,
                     style = MaterialTheme.typography.bodySmall.copy(
                         textDecoration = TextDecoration.LineThrough,
                         color = Color.Gray

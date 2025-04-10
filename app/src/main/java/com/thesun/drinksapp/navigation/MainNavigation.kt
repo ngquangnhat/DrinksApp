@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.thesun.drinksapp.ui.admin.AdminScreen
+import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
 import com.thesun.drinksapp.ui.register.RegisterScreen
@@ -40,6 +41,10 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         }
         composable("role_user") {
             UserScreen(navController = navController)
+        }
+        composable("drinkDetail/{drinkId}") { backStackEntry ->
+            val drinkId = backStackEntry.arguments?.getString("drinkId")?.toIntOrNull() ?: 0
+            DrinkDetailScreen(drinkId = drinkId, navController = navController)
         }
     }
 }
