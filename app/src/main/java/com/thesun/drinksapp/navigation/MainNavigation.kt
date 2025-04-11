@@ -43,7 +43,7 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
             UserScreen(navController = navController)
         }
         composable("drinkDetail/{drinkId}") { backStackEntry ->
-            val drinkId = backStackEntry.arguments?.getString("drinkId")?.toIntOrNull() ?: 0
+            val drinkId = backStackEntry.arguments?.getLong("drinkId") ?: 0L
             DrinkDetailScreen(drinkId = drinkId, navController = navController)
         }
     }
