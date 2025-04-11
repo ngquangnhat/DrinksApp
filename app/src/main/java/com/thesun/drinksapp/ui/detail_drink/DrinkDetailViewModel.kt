@@ -40,7 +40,12 @@ class DrinkDetailViewModel @Inject constructor(
         _uiState.update { it.copy(drinkId = drinkId) }
         loadDrinkDetails(drinkId)
         loadToppings()
-        drinkOld?.let { restorePreviousSelections(it) }
+        drinkOld?.let {
+            val currentToppings = _uiState.value.toppings
+            if (currentToppings.isNotEmpty()) {
+                restorePreviousToppingSelections(it, currentToppings)
+            }
+        }
     }
 
     private fun loadDrinkDetails(drinkId: Long) {
@@ -91,9 +96,14 @@ class DrinkDetailViewModel @Inject constructor(
     private fun loadToppings() {
         toppingValueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val toppings = snapshot.children.mapNotNull { it.getValue(Topping::class.java) }
-                _uiState.update { it.copy(toppings = toppings) }
-                drinkOld?.let { restorePreviousToppingSelections(it, toppings) }
+                val newToppings = snapshot.children.mapNotNull { it.getValue(Topping::class.java) }
+                val currentToppings = _uiState.value.toppings.associateBy { it.id }
+                val updatedToppings = newToppings.map { newTopping ->
+                    val existingTopping = currentToppings[newTopping.id]
+                    newTopping.copy(isSelected = existingTopping?.isSelected ?: false)
+                }
+                _uiState.update { it.copy(toppings = updatedToppings) }
+                drinkOld?.let { restorePreviousToppingSelections(it, updatedToppings) }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -205,7 +215,7 @@ class DrinkDetailViewModel @Inject constructor(
         }
     }
 
-    private fun isDrinkInCart(drinkId: Long): Boolean {
+    private suspend fun isDrinkInCart(drinkId: Long): Boolean {
         return drinkDao.checkDrinkInCart(drinkId)?.isNotEmpty() == true
     }
 

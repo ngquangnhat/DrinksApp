@@ -1,14 +1,18 @@
 package com.thesun.drinksapp.ui.detail_drink
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
@@ -21,15 +25,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Drink
 import com.thesun.drinksapp.data.model.Topping
+import com.thesun.drinksapp.ui.theme.BgFilter
+import com.thesun.drinksapp.ui.theme.BgMainColor
+import com.thesun.drinksapp.ui.theme.ColorAccent
+import com.thesun.drinksapp.ui.theme.ColorPrimary
+import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.utils.Constant
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,7 +77,8 @@ fun DrinkDetailScreen(
         onToppingClick = { viewModel.toggleTopping(it) },
         onAddToCart = {
             viewModel.addToCart {
-                navController.navigate("cart")
+                navController.popBackStack()
+//                navController.navigate("cart")
             }
         }
     )
@@ -96,17 +110,20 @@ fun DrinkDetailContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(drink?.name ?: "Cafe Manager") },
+                title = { Text(drink?.name ?: "Cafe Manager", fontSize = 18.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
                     }
                 },
                 actions = {
                     IconButton(onClick = onCartClick) {
                         Icon(Icons.Default.ShoppingCart, contentDescription = "Giỏ hàng")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
         },
         bottomBar = {
@@ -116,22 +133,28 @@ fun DrinkDetailContent(
             )
         }
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .background(Color.White),
-            contentPadding = PaddingValues(16.dp)
         ) {
-            item {
-                DrinkImage(drink?.banner)
-                Spacer(modifier = Modifier.height(16.dp))
+            DrinkImage(drink?.banner)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-50).dp)
+                    .padding(top = 0.dp, start = 16.dp, end = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
                 DrinkInfo(
                     drink = drink,
                     quantity = quantity,
                     onQuantityChange = onQuantityChange
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 CustomizationSection(
                     variant = variant,
                     size = size,
@@ -142,9 +165,7 @@ fun DrinkDetailContent(
                     onSugarChange = onSugarChange,
                     onIceChange = onIceChange
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            item {
+                Spacer(modifier = Modifier.height(12.dp))
                 ToppingSection(
                     toppings = toppings,
                     onToppingClick = onToppingClick
@@ -166,8 +187,8 @@ fun DrinkImage(banner: String?) {
         contentDescription = "Hình ảnh đồ uống",
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .clip(RoundedCornerShape(8.dp)),
+            .height(300.dp)
+            .padding(top = 8.dp),
         contentScale = ContentScale.Crop
     )
 }
@@ -179,8 +200,13 @@ fun DrinkInfo(
     onQuantityChange: (Boolean) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, ColorAccent, RoundedCornerShape(8.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -190,44 +216,123 @@ fun DrinkInfo(
             ) {
                 Text(
                     text = drink?.name ?: "Cafe Manager",
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Row(
-                    modifier = Modifier
-                        .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-                        .padding(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { onQuantityChange(false) }) {
-                        Icon(Icons.Default.Remove, contentDescription = "Giảm")
-                    }
-                    Text(
-                        text = quantity.toString(),
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        fontSize = 16.sp
-                    )
-                    IconButton(onClick = { onQuantityChange(true) }) {
-                        Icon(Icons.Default.Add, contentDescription = "Tăng")
-                    }
-                }
+                Text(
+                    text = (drink?.realPrice.toString() + Constant.CURRENCY),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Star, contentDescription = "Đánh giá", tint = Color.Yellow)
                 Text(
-                    text = "${drink?.rate ?: 0.0} (${drink?.countReviews ?: 0})",
+                    text = (drink?.description ?: "Cafe Manager"),
                     fontSize = 14.sp,
-                    modifier = Modifier.padding(start = 4.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Xếp hạng và đánh giá",
-                    fontSize = 14.sp,
-                    color = Color(0xFF6200EE),
-                    modifier = Modifier.clickable { /* TODO: Điều hướng đến màn hình đánh giá */ }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .border(
+                                1.dp, ColorAccent, RoundedCornerShape(
+                                    topStart = 4.dp,
+                                    bottomStart = 4.dp
+                                )
+                            )
+                            .clickable {
+                                onQuantityChange(false)
+                            }
+                    ) {
+                        Text(
+                            text = "-",
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            fontSize = 18.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .offset(x = (-1).dp)
+                            .height(20.dp)
+                            .border(1.dp, ColorAccent, RoundedCornerShape(0.dp))
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = quantity.toString(),
+                            modifier = Modifier.align(Alignment.Center),
+                            fontSize = 14.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .offset(x = (-2).dp)
+                            .border(
+                                1.dp, ColorAccent, RoundedCornerShape(
+                                    topEnd = 4.dp,
+                                    bottomEnd = 4.dp
+                                )
+                            )
+                            .clickable {
+                                onQuantityChange(true)
+                            }
+                    ) {
+                        Text(
+                            text = "+",
+                            modifier = Modifier.align(Alignment.Center),
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_star_yellow),
+                        tint = Color(0xFFfbb909),
+                        contentDescription = "Đánh giá",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "${drink?.rate ?: 0.0} (${drink?.countReviews ?: 0})",
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "-",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Xếp hạng và đánh giá",
+                        fontSize = 12.sp,
+                        color = ColorPrimary,
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .clickable { }
+                    )
+                }
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowForwardIos,
+                    contentDescription = "Giỏ hàng",
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -246,8 +351,13 @@ fun CustomizationSection(
     onIceChange: (String) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, ColorAccent, RoundedCornerShape(8.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -262,21 +372,21 @@ fun CustomizationSection(
                 selectedOption = variant,
                 onOptionSelected = onVariantChange
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             OptionRow(
                 label = "Kích thước",
                 options = listOf(Topping.SIZE_REGULAR, Topping.SIZE_MEDIUM, Topping.SIZE_LARGE),
                 selectedOption = size,
                 onOptionSelected = onSizeChange
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             OptionRow(
                 label = "Đường",
                 options = listOf(Topping.SUGAR_NORMAL, Topping.SUGAR_LESS),
                 selectedOption = sugar,
                 onOptionSelected = onSugarChange
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             OptionRow(
                 label = "Đá",
                 options = listOf(Topping.ICE_NORMAL, Topping.ICE_LESS),
@@ -300,7 +410,7 @@ fun OptionRow(
     ) {
         Text(
             text = label,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             modifier = Modifier.weight(1f)
         )
         options.forEach { option ->
@@ -310,12 +420,12 @@ fun OptionRow(
                     .padding(start = 8.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(
-                        if (option == selectedOption) Color(0xFF6200EE) else Color.White
+                        if (option == selectedOption) ColorPrimary else Color.White
                     )
-                    .border(1.dp, Color(0xFF6200EE), RoundedCornerShape(4.dp))
+                    .border(1.dp, ColorPrimary, RoundedCornerShape(4.dp))
                     .padding(horizontal = 12.dp, vertical = 4.dp)
                     .clickable { onOptionSelected(option) },
-                color = if (option == selectedOption) Color.White else Color(0xFF6200EE),
+                color = if (option == selectedOption) Color.White else ColorPrimary,
                 fontSize = 14.sp
             )
         }
@@ -328,8 +438,13 @@ fun ToppingSection(
     onToppingClick: (Long) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, ColorAccent, RoundedCornerShape(8.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -342,25 +457,43 @@ fun ToppingSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onToppingClick(topping.id) }
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .clickable { onToppingClick(topping.id) },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        topping.name?.let {
+                            Text(
+                                text = it,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
+                    Text(
+                        text = "+${topping.price}${Constant.CURRENCY}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorPrimaryDark,
+                    )
                     Checkbox(
                         checked = topping.isSelected,
-                        onCheckedChange = { onToppingClick(topping.id) }
-                    )
-                    Text(
-                        text = "${topping.name} (+${topping.price}${Constant.CURRENCY})",
-                        modifier = Modifier.padding(start = 8.dp),
-                        fontSize = 16.sp
+                        onCheckedChange = { onToppingClick(topping.id) },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(start = 8.dp),
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = ColorPrimaryDark,
+                            uncheckedColor = ColorAccent
+                        )
                     )
                 }
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesSection(
     notes: String,
@@ -380,7 +513,20 @@ fun NotesSection(
                 .fillMaxWidth()
                 .height(100.dp),
             placeholder = { Text("Tùy chọn") },
-            maxLines = 4
+            maxLines = 4,
+            shape = RoundedCornerShape(6.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Gray,
+                unfocusedBorderColor = Color.LightGray,
+                disabledBorderColor = Color.Gray,
+                cursorColor = Color.Black,
+                containerColor = Color.White
+            ),
+            textStyle = TextStyle(
+                fontSize = 14.sp,
+                color = Color.Black
+            ),
+            singleLine = false
         )
     }
 }
@@ -393,24 +539,25 @@ fun BottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF5F5F5))
+            .background(BgFilter)
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = "Tổng cộng", fontSize = 14.sp)
+            Text(text = "Tổng tiền", fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "$totalPrice${Constant.CURRENCY}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF6200EE)
+                color = ColorPrimary
             )
         }
         Button(
             onClick = onAddToCart,
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D6E63))
+            colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary)
         ) {
             Text("Thêm vào giỏ hàng", fontSize = 16.sp, color = Color.White)
         }
@@ -423,7 +570,7 @@ fun DrinkDetailContentPreview() {
     val sampleDrink = Drink(
         id = 1,
         name = "Cafe Manager",
-        banner = "https://via.placeholder.com/300"
+        banner = "https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/08/anh-cafe.jpg"
     )
     val sampleToppings = listOf(
         Topping(id = 0, name = "Item 0", price = 5000),

@@ -46,7 +46,7 @@ fun CartBottomBar(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
+            .padding(horizontal = 10.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = ColorPrimaryDark)
     ) {

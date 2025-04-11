@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.user.home_tab
 
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image

@@ -1,13 +1,16 @@
 package com.thesun.drinksapp.navigation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.thesun.drinksapp.ui.admin.AdminScreen
 import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
@@ -42,7 +45,10 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         composable("role_user") {
             UserScreen(navController = navController)
         }
-        composable("drinkDetail/{drinkId}") { backStackEntry ->
+        composable("drinkDetail/{drinkId}",
+            arguments = listOf(navArgument("drinkId") {
+                type = NavType.LongType
+            })) { backStackEntry ->
             val drinkId = backStackEntry.arguments?.getLong("drinkId") ?: 0L
             DrinkDetailScreen(drinkId = drinkId, navController = navController)
         }
