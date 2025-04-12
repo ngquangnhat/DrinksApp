@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.navigation
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -11,10 +12,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.google.gson.Gson
+import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
 import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
+import com.thesun.drinksapp.ui.rating_reviews.RatingReviewScreen
 import com.thesun.drinksapp.ui.register.RegisterScreen
 import com.thesun.drinksapp.ui.splash.SplashScreen
 import com.thesun.drinksapp.ui.user.UserScreen
@@ -24,8 +28,16 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
     NavHost(
         navController = navController,
         startDestination = "splash",
-        enterTransition = { slideInHorizontally(animationSpec = tween(500), initialOffsetX = { it }) },
-        exitTransition = { slideOutHorizontally(animationSpec = tween(500), targetOffsetX = { -it }) }
+        enterTransition = {
+            slideInHorizontally(
+                animationSpec = tween(500),
+                initialOffsetX = { it })
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                animationSpec = tween(500),
+                targetOffsetX = { -it })
+        }
     ) {
         composable("splash") {
             SplashScreen(navController = navController)
@@ -48,9 +60,20 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         composable("drinkDetail/{drinkId}",
             arguments = listOf(navArgument("drinkId") {
                 type = NavType.LongType
-            })) { backStackEntry ->
+            })
+        ) { backStackEntry ->
             val drinkId = backStackEntry.arguments?.getLong("drinkId") ?: 0L
             DrinkDetailScreen(drinkId = drinkId, navController = navController)
+        }
+        composable(
+            route = "rating_reviews/{ratingReviewJson}",
+        ) {backStackEntry ->
+            val json = backStackEntry.arguments?.getString("ratingReviewJson") ?: ""
+            val ratingReview = Gson().fromJson(Uri.decode(json), RatingReview::class.java)
+            RatingReviewScreen(
+                navController = navController,
+                ratingReview = ratingReview
+            )
         }
     }
 }

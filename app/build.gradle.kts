@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     id("kotlin-kapt")
+    id("kotlin-parcelize")
     alias(libs.plugins.hilt.gradle)
     alias(libs.plugins.ksp)
 }

@@ -199,10 +199,10 @@ fun DrinkBanner(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp)
+            .padding(top = 16.dp, bottom = 10.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.LightGray)
-            .height(150.dp)
+            .height(200.dp)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -272,7 +272,9 @@ fun CategoryTabScreen(
     )
     val selectedFilters by selectedFiltersFlow.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.White), verticalArrangement = Arrangement.Top) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.White), verticalArrangement = Arrangement.Top) {
         val coroutineScope = rememberCoroutineScope()
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
@@ -299,7 +301,9 @@ fun CategoryTabScreen(
                     },
                     selectedContentColor = ColorPrimaryDark,
                     unselectedContentColor = ColorAccent,
-                    modifier = Modifier.width(130.dp).background(Color.White),
+                    modifier = Modifier
+                        .width(130.dp)
+                        .background(Color.White),
                     text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold) } }
                 )
             }
@@ -375,7 +379,7 @@ fun DrinkTabPage(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
+                .height(640.dp)
         ) {
             items(drinks) { drink ->
                 DrinkItem(drink){

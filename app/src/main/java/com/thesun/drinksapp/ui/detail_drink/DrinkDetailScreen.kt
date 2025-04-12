@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.detail_drink
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,11 +33,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.gson.Gson
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Drink
+import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.data.model.Topping
 import com.thesun.drinksapp.ui.theme.BgFilter
 import com.thesun.drinksapp.ui.theme.BgMainColor
@@ -69,6 +73,14 @@ fun DrinkDetailScreen(
         onBackClick = { navController.popBackStack() },
         onCartClick = { navController.navigate("cart") },
         onQuantityChange = { increment -> viewModel.updateQuantity(increment) },
+        onClickRatingReview = {
+            val ratingReview = RatingReview(
+                type = RatingReview.TYPE_RATING_REVIEW_DRINK,
+                id = drinkId.toString()
+            )
+            val json = Uri.encode(Gson().toJson(ratingReview))
+            navController.navigate("rating_reviews/$json")
+        },
         onVariantChange = { viewModel.updateVariant(it) },
         onSizeChange = { viewModel.updateSize(it) },
         onSugarChange = { viewModel.updateSugar(it) },
@@ -99,6 +111,7 @@ fun DrinkDetailContent(
     onBackClick: () -> Unit,
     onCartClick: () -> Unit,
     onQuantityChange: (Boolean) -> Unit,
+    onClickRatingReview: () -> Unit,
     onVariantChange: (String) -> Unit,
     onSizeChange: (String) -> Unit,
     onSugarChange: (String) -> Unit,
@@ -152,7 +165,8 @@ fun DrinkDetailContent(
                 DrinkInfo(
                     drink = drink,
                     quantity = quantity,
-                    onQuantityChange = onQuantityChange
+                    onQuantityChange = onQuantityChange,
+                    onClickRatingReview = onClickRatingReview,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 CustomizationSection(
@@ -197,7 +211,8 @@ fun DrinkImage(banner: String?) {
 fun DrinkInfo(
     drink: Drink?,
     quantity: Int,
-    onQuantityChange: (Boolean) -> Unit
+    onQuantityChange: (Boolean) -> Unit,
+    onClickRatingReview: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -295,7 +310,11 @@ fun DrinkInfo(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onClickRatingReview()
+                    },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -326,7 +345,6 @@ fun DrinkInfo(
                         color = ColorPrimary,
                         modifier = Modifier
                             .padding(top = 2.dp)
-                            .clickable { }
                     )
                 }
                 Icon(
@@ -594,6 +612,7 @@ fun DrinkDetailContentPreview() {
         onCartClick = {},
         onQuantityChange = {},
         onVariantChange = {},
+        onClickRatingReview = {},
         onSizeChange = {},
         onSugarChange = {},
         onIceChange = {},
