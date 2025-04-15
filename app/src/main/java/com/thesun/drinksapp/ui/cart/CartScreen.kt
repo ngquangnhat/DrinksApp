@@ -7,8 +7,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
@@ -30,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +49,7 @@ import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
+import com.thesun.drinksapp.utils.Constant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,10 +91,10 @@ fun CartScreen(
         },
         onDeleteItem = { drink, position -> viewModel.deleteCartItem(drink, position) },
         onUpdateItem = { drink, position -> viewModel.updateCartItem(drink, position) },
-        onEditItem = { drink , index ->
+        onEditItem = { drink, index ->
             navController.navigate("drinkDetail/${drink.id}?index=$index")
         },
-        onBackClick = {navController.popBackStack()},
+        onBackClick = { navController.popBackStack() },
     )
 }
 
@@ -150,64 +154,53 @@ fun CartContent(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(padding),
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
         ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
-                item {
-                    CartItemsSection(
-                        cartItems = cartItems,
-                        onDeleteItem = onDeleteItem,
-                        onUpdateItem = onUpdateItem,
-                        onEditItem = onEditItem
-                    )
-                    AddOrderSection(onAddOrderClick = onAddOrderClick)
-                    Divider(
-                        color = BgFilter,
-                        thickness = 6.dp,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    )
-                    InfoSection(
-                        title = "Phương thức thanh toán",
-                        value = paymentMethod?.name ?: "Chưa chọn phương thức",
-                        onClick = onPaymentMethodClick
-                    )
-                    Divider(
-                        color = BgFilter,
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(vertical = 10.dp)
-                    )
-                    InfoSection(
-                        title = "Địa chỉ",
-                        value = address?.address ?: "Chưa chọn địa chỉ",
-                        onClick = onAddressClick
-                    )
-                    Divider(
-                        color = Color(0xFFE0E0E0),
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(vertical = 10.dp)
-                    )
-                    InfoSection(
-                        title = "Voucher",
-                        value = voucher?.title ?: "Chưa chọn voucher",
-                        onClick = onVoucherClick
-                    )
-                    Divider(
-                        color = BgFilter,
-                        thickness = 6.dp,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    )
-                    SummarySection(
-                        itemCount = itemCount,
-                        drinkPrice = cartItems.sumOf { it.totalPrice },
-                        voucherDiscount = voucher?.getPriceDiscount(cartItems.sumOf { it.totalPrice })
-                            ?: 0
-                    )
-                }
+            CartItemsSection(
+                cartItems = cartItems,
+                onDeleteItem = onDeleteItem,
+                onUpdateItem = onUpdateItem,
+                onEditItem = onEditItem
+            )
+            AddOrderSection(onAddOrderClick = onAddOrderClick)
+            Divider(
+                color = BgFilter,
+                thickness = 6.dp,
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+            ){
+                InfoSection(
+                    title = "Phương thức thanh toán",
+                    value = paymentMethod?.name ?: "Chưa chọn phương thức thanh toán",
+                    onClick = onPaymentMethodClick
+                )
+                InfoSection(
+                    title = "Địa chỉ",
+                    value = address?.address ?: "Chưa chọn địa chỉ giao hàng",
+                    onClick = onAddressClick
+                )
+                InfoSection(
+                    title = "Voucher",
+                    value = voucher?.title ?: "Chưa áp dụng mã khuyến mại",
+                    onClick = onVoucherClick
+                )
             }
+            Divider(
+                color = BgFilter,
+                thickness = 6.dp,
+                modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)
+            )
+            SummarySection(
+                itemCount = itemCount,
+                drinkPrice = cartItems.sumOf { it.totalPrice },
+                voucher = voucher
+            )
         }
     }
+
 }
 
 @Composable
@@ -281,15 +274,15 @@ private fun CartItem(
                     drink.name?.let {
                         Text(
                             text = it,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextColorHeading,
                             modifier = Modifier.weight(1f)
                         )
                     }
                     Text(
-                        text = "${drink.priceOneDrink}đ",
-                        fontSize = 16.sp,
+                        text = (drink.priceOneDrink.toString() + Constant.CURRENCY),
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextColorHeading
                     )
@@ -299,14 +292,18 @@ private fun CartItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     drink.option?.let {
                         Text(
                             text = it,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             color = Color(0xFF757575),
-                            modifier = Modifier.weight(1f)
+                            maxLines = 2,
+                            lineHeight = 14.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.width(260.dp)
                         )
                     }
                     Text(
@@ -321,33 +318,38 @@ private fun CartItem(
                         .fillMaxWidth()
                         .padding(top = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(
-                        onClick = onEdit,
-                        modifier = Modifier.size(24.dp)
+                    Row(
+                        Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_edit),
-                            contentDescription = "Chỉnh sửa món",
-                            tint = Color(0xFFB0B0B0)
-                        )
+                        IconButton(
+                            onClick = onEdit,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_edit),
+                                contentDescription = "Chỉnh sửa món",
+                                tint = Color(0xFF2E7D32),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_delete),
+                                contentDescription = "Xóa món",
+                                tint = Color.Red,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_delete),
-                            contentDescription = "Xóa món",
-                            tint = Color(0xFFB0B0B0)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
+                    Spacer(modifier = Modifier.width(16.dp))
                     Row(
                         modifier = Modifier
-                            .width(100.dp)
                             .height(24.dp)
                             .background(
                                 color = Color.White,
@@ -361,7 +363,7 @@ private fun CartItem(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(20.dp)
+                                    .size(24.dp)
                                     .border(
                                         1.dp, ColorAccent, RoundedCornerShape(
                                             topStart = 4.dp,
@@ -389,7 +391,7 @@ private fun CartItem(
                             Box(
                                 modifier = Modifier
                                     .offset(x = (-1).dp)
-                                    .height(20.dp)
+                                    .height(24.dp)
                                     .border(1.dp, ColorAccent, RoundedCornerShape(0.dp))
                                     .padding(horizontal = 8.dp)
                             ) {
@@ -401,7 +403,7 @@ private fun CartItem(
                             }
                             Box(
                                 modifier = Modifier
-                                    .size(20.dp)
+                                    .size(24.dp)
                                     .offset(x = (-2).dp)
                                     .border(
                                         1.dp, ColorAccent, RoundedCornerShape(
@@ -446,20 +448,20 @@ private fun AddOrderSection(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onAddOrderClick() }
-            .padding(vertical = 10.dp),
+            .padding(top = 2.dp, start = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(18.dp),
             tint = Color(0xFFB0B0B0)
         )
         Text(
-            text = "Thêm món",
+            text = "Tiếp tục thêm vào giỏ hàng",
             fontSize = 14.sp,
             color = ColorPrimaryDark,
-            modifier = Modifier.padding(start = 10.dp)
+            modifier = Modifier.padding(start = 4.dp)
         )
     }
 }
@@ -470,34 +472,44 @@ private fun InfoSection(
     value: String,
     onClick: () -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 10.dp)
+            .fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 12.dp)
         ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextColorHeading
-            )
-            Text(
-                text = value,
-                fontSize = 14.sp,
-                color = Color(0xFF757575),
-                modifier = Modifier.padding(top = 5.dp)
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextColorHeading,
+                    lineHeight = 14.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = value,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    color = Color(0xFF757575),
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = Color(0xFFB0B0B0)
             )
         }
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = Color(0xFFB0B0B0)
+        Divider(
+            color = ColorAccent,
+            thickness = 1.dp,
         )
     }
 }
@@ -506,19 +518,49 @@ private fun InfoSection(
 private fun SummarySection(
     itemCount: Int,
     drinkPrice: Int,
-    voucherDiscount: Int
+    voucher: Voucher? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp)
+            .padding(horizontal = 10.dp)
     ) {
         Text(
-            text = "Tóm tắt thanh toán",
-            fontSize = 16.sp,
+            text = "Thanh toán",
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
+            lineHeight = 16.sp,
             color = TextColorHeading
         )
+        Spacer(modifier = Modifier.height(5.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Giá món",
+                    fontSize = 14.sp,
+                    color = TextColorHeading,
+                    lineHeight = 14.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "($itemCount món)",
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                    color = Color(0xFF757575),
+                )
+            }
+            Text(
+                text = drinkPrice.toString() + Constant.CURRENCY,
+                fontSize = 14.sp,
+                color = Color(0xFF757575)
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -529,40 +571,26 @@ private fun SummarySection(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Giá món",
+                    text = "Khuyến mại",
                     fontSize = 14.sp,
-                    color = TextColorHeading
+                    lineHeight = 14.sp,
+                    color = TextColorHeading,
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "($itemCount món)",
+                    text = voucher?.title ?: "Chưa áp dụng mã khuyến mại",
                     fontSize = 12.sp,
+                    lineHeight = 12.sp,
                     color = Color(0xFF757575),
-                    modifier = Modifier.padding(top = 5.dp)
                 )
             }
-            Text(
-                text = "$drinkPrice đ",
-                fontSize = 14.sp,
-                color = Color(0xFF757575)
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Voucher",
-                fontSize = 14.sp,
-                color = TextColorHeading,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "-$voucherDiscount đ",
-                fontSize = 14.sp,
-                color = Color(0xFF757575)
-            )
+            if (voucher != null) {
+                Text(
+                    text = "-" + voucher.discount.toString() + Constant.CURRENCY,
+                    fontSize = 14.sp,
+                    color = Color(0xFF757575)
+                )
+            }
         }
     }
 }
@@ -576,7 +604,8 @@ private fun BottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(BgFilter)
-            .padding(horizontal = 10.dp, vertical = 10.dp),
+            .padding(16.dp)
+            .padding(bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -587,8 +616,9 @@ private fun BottomBar(
                 fontSize = 14.sp,
                 color = TextColorHeading
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "$totalPrice đ",
+                text = totalPrice.toString() + Constant.CURRENCY,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = ColorPrimaryDark
@@ -596,18 +626,12 @@ private fun BottomBar(
         }
         Button(
             onClick = onCheckoutClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ColorPrimaryDark,
-                contentColor = Color.White
-            ),
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .height(48.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
+            shape = RoundedCornerShape(8.dp),
         ) {
             Text(
                 text = "Thanh toán",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 16.sp
             )
         }
     }
@@ -624,18 +648,18 @@ fun CartContentPreview() {
                 Drink(
                     id = 1,
                     name = "Trà sữa",
-                    priceOneDrink = 30000,
+                    priceOneDrink = 30,
                     count = 2,
-                    totalPrice = 60000,
+                    totalPrice = 60,
                     option = "Ít đường",
                     image = "https://example.com/tra-sua.jpg"
                 ),
                 Drink(
                     id = 2,
                     name = "Cà phê",
-                    priceOneDrink = 20000,
+                    priceOneDrink = 20,
                     count = 1,
-                    totalPrice = 20000,
+                    totalPrice = 20,
                     option = "Đen",
                     image = "https://example.com/ca-phe.jpg"
                 )
@@ -643,7 +667,7 @@ fun CartContentPreview() {
             paymentMethod = PaymentMethod(id = 1, name = "Tiền mặt"),
             address = Address(id = 1, address = "123 Đường Láng, Hà Nội"),
             voucher = Voucher(id = 1, discount = 10),
-            totalPrice = 70000,
+            totalPrice = 70,
             itemCount = 2,
             onBackClick = {},
             onAddOrderClick = {},
@@ -653,7 +677,7 @@ fun CartContentPreview() {
             onCheckoutClick = {},
             onDeleteItem = { _, _ -> },
             onUpdateItem = { _, _ -> },
-            onEditItem = {_, _ -> }
+            onEditItem = { _, _ -> }
         )
     }
 }

@@ -1,7 +1,7 @@
 package com.thesun.drinksapp.utils
 
 object Constant {
-    const val CURRENCY = ".000vnd"
+    const val CURRENCY = ".000đ"
     const val CATEGORY_ID = "category_id"
     const val DRINK_ID = "drink_id"
     const val PAYMENT_METHOD_ID = "payment_method_id"

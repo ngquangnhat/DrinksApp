@@ -573,7 +573,8 @@ fun BottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(BgFilter)
-            .padding(16.dp),
+            .padding(16.dp)
+            .padding(bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
