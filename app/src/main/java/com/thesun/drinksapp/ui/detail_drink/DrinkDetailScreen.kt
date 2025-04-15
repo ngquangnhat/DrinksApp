@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Drink
 import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.data.model.Topping
+import com.thesun.drinksapp.ui.cart.CartViewModel
 import com.thesun.drinksapp.ui.theme.BgFilter
 import com.thesun.drinksapp.ui.theme.BgMainColor
 import com.thesun.drinksapp.ui.theme.ColorAccent
@@ -49,16 +51,20 @@ import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.utils.Constant
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrinkDetailScreen(
     drinkId: Long,
+    cartItemIndex: Int? = null,
     navController: NavController,
-    viewModel: DrinkDetailViewModel = hiltViewModel()
+    viewModel: DrinkDetailViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
-    viewModel.init(drinkId)
+    LaunchedEffect (drinkId, cartItemIndex){
+        viewModel.init(drinkId, null,cartItemIndex, cartViewModel)
+    }
     val uiState by viewModel.uiState.collectAsState()
     val drink by viewModel.drink.collectAsState()
+    Log.d("DrinkDetailScreen", "CartItemIndex: $cartItemIndex")
 
     DrinkDetailContent(
         drink = drink,
@@ -70,6 +76,7 @@ fun DrinkDetailScreen(
         ice = uiState.ice,
         notes = uiState.notes,
         totalPrice = uiState.totalPrice,
+        isEditing = cartItemIndex != -1,
         onBackClick = { navController.popBackStack() },
         onCartClick = { navController.navigate("cart") },
         onQuantityChange = { increment -> viewModel.updateQuantity(increment) },
@@ -88,9 +95,14 @@ fun DrinkDetailScreen(
         onNotesChange = { viewModel.updateNotes(it) },
         onToppingClick = { viewModel.toggleTopping(it) },
         onAddToCart = {
-            viewModel.addToCart {
-                navController.popBackStack()
-//                navController.navigate("cart")
+            if (cartItemIndex != -1) {
+                viewModel.updateCartItem(cartViewModel) {
+                    navController.popBackStack()
+                }
+            } else {
+                viewModel.addToCart {
+                    navController.navigate("cart")
+                }
             }
         }
     )
@@ -108,6 +120,7 @@ fun DrinkDetailContent(
     ice: String,
     notes: String,
     totalPrice: Int,
+    isEditing: Boolean,
     onBackClick: () -> Unit,
     onCartClick: () -> Unit,
     onQuantityChange: (Boolean) -> Unit,
@@ -142,7 +155,8 @@ fun DrinkDetailContent(
         bottomBar = {
             BottomBar(
                 totalPrice = totalPrice,
-                onAddToCart = onAddToCart
+                onAddToCart = onAddToCart,
+                buttonText = if (isEditing) "Cập nhật" else "Thêm vào giỏ hàng"
             )
         }
     ) { padding ->
@@ -552,7 +566,8 @@ fun NotesSection(
 @Composable
 fun BottomBar(
     totalPrice: Int,
-    onAddToCart: () -> Unit
+    onAddToCart: () -> Unit,
+    buttonText: String
 ) {
     Row(
         modifier = Modifier
@@ -577,7 +592,7 @@ fun BottomBar(
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary)
         ) {
-            Text("Thêm vào giỏ hàng", fontSize = 16.sp, color = Color.White)
+            Text(buttonText, fontSize = 16.sp, color = Color.White)
         }
     }
 }
@@ -608,6 +623,7 @@ fun DrinkDetailContentPreview() {
         ice = Topping.ICE_NORMAL,
         notes = "",
         totalPrice = 0,
+        isEditing = false,
         onBackClick = {},
         onCartClick = {},
         onQuantityChange = {},

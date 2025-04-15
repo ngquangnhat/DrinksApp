@@ -21,11 +21,11 @@ interface DrinkDAO {
     suspend fun checkDrinkInCart(id: Long): List<Drink>?
 
     @Delete
-    fun deleteDrink(drink: Drink)
+    suspend fun deleteDrink(drink: Drink)
 
     @Update
     suspend fun updateDrink(drink: Drink)
 
     @Query("DELETE from drink")
-    fun deleteAllDrink()
+    suspend fun deleteAllDrink()
 }

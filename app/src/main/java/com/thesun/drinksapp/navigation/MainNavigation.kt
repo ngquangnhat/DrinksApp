@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.google.gson.Gson
 import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
+import com.thesun.drinksapp.ui.cart.CartScreen
 import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
@@ -57,13 +58,21 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         composable("role_user") {
             UserScreen(navController = navController)
         }
-        composable("drinkDetail/{drinkId}",
-            arguments = listOf(navArgument("drinkId") {
-                type = NavType.LongType
-            })
+        composable(
+            route = "drinkDetail/{drinkId}?index={index}",
+            arguments = listOf(
+                navArgument("drinkId") { type = NavType.LongType },
+                navArgument("index") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) { backStackEntry ->
             val drinkId = backStackEntry.arguments?.getLong("drinkId") ?: 0L
-            DrinkDetailScreen(drinkId = drinkId, navController = navController)
+            val indexString = backStackEntry.arguments?.getString("index")
+            val index = indexString?.toIntOrNull() ?: -1
+            DrinkDetailScreen(drinkId = drinkId, cartItemIndex = index, navController = navController)
         }
         composable(
             route = "rating_reviews/{ratingReviewJson}",
@@ -74,6 +83,9 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
                 navController = navController,
                 ratingReview = ratingReview
             )
+        }
+        composable("cart") {
+            CartScreen(navController = navController)
         }
     }
 }

@@ -51,7 +51,7 @@ fun UserScreen(
 ) {
     UserScreenUI(
         navMainController = navController,
-        onGoToCard = {  }
+        onGoToCard = { navController.navigate("cart") }
     )
 }
 

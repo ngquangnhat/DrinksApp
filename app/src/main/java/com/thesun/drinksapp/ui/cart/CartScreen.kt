@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.cart
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Address
@@ -37,9 +42,57 @@ import com.thesun.drinksapp.data.model.Drink
 import com.thesun.drinksapp.data.model.PaymentMethod
 import com.thesun.drinksapp.data.model.Voucher
 import com.thesun.drinksapp.ui.theme.BgFilter
+import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CartScreen(
+    navController: NavController,
+    viewModel: CartViewModel = hiltViewModel()
+) {
+    val cartItems by viewModel.cartItems
+    val paymentMethod by viewModel.paymentMethod
+    val address by viewModel.address
+    val voucher by viewModel.voucher
+    val totalPrice by viewModel.totalPrice
+    val itemCount by viewModel.itemCount
+    val toastMessage by viewModel.toastMessage.collectAsState()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(navController.context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearToastMessage()
+        }
+    }
+    CartContent(
+        cartItems = cartItems,
+        paymentMethod = paymentMethod,
+        address = address,
+        voucher = voucher,
+        totalPrice = totalPrice,
+        itemCount = itemCount,
+        onAddOrderClick = { navController.popBackStack() },
+        onPaymentMethodClick = {
+        },
+        onAddressClick = {
+        },
+        onVoucherClick = {
+        },
+        onCheckoutClick = {
+            viewModel.checkout { order ->
+            }
+        },
+        onDeleteItem = { drink, position -> viewModel.deleteCartItem(drink, position) },
+        onUpdateItem = { drink, position -> viewModel.updateCartItem(drink, position) },
+        onEditItem = { drink , index ->
+            navController.navigate("drinkDetail/${drink.id}?index=$index")
+        },
+        onBackClick = {navController.popBackStack()},
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +111,7 @@ fun CartContent(
     onCheckoutClick: () -> Unit,
     onDeleteItem: (Drink, Int) -> Unit,
     onUpdateItem: (Drink, Int) -> Unit,
-    onEditItem: (Drink) -> Unit,
+    onEditItem: (Drink, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -148,7 +201,8 @@ fun CartContent(
                     SummarySection(
                         itemCount = itemCount,
                         drinkPrice = cartItems.sumOf { it.totalPrice },
-                        voucherDiscount = voucher?.getPriceDiscount(cartItems.sumOf { it.totalPrice }) ?: 0
+                        voucherDiscount = voucher?.getPriceDiscount(cartItems.sumOf { it.totalPrice })
+                            ?: 0
                     )
                 }
             }
@@ -161,7 +215,7 @@ private fun CartItemsSection(
     cartItems: List<Drink>,
     onDeleteItem: (Drink, Int) -> Unit,
     onUpdateItem: (Drink, Int) -> Unit,
-    onEditItem: (Drink) -> Unit
+    onEditItem: (Drink, Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -177,7 +231,7 @@ private fun CartItemsSection(
                 drink = drink,
                 onDelete = { onDeleteItem(drink, index) },
                 onUpdate = { updatedDrink -> onUpdateItem(updatedDrink, index) },
-                onEdit = { onEditItem(drink) }
+                onEdit = { onEditItem(drink, index) }
             )
         }
     }
@@ -198,7 +252,9 @@ private fun CartItem(
             .padding(bottom = 12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
@@ -264,7 +320,7 @@ private fun CartItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
                         onClick = onEdit,
@@ -276,9 +332,6 @@ private fun CartItem(
                             tint = Color(0xFFB0B0B0)
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(20.dp))
-
                     IconButton(
                         onClick = onDelete,
                         modifier = Modifier.size(24.dp)
@@ -294,77 +347,83 @@ private fun CartItem(
 
                     Row(
                         modifier = Modifier
-                            .width(80.dp)
+                            .width(100.dp)
                             .height(24.dp)
                             .background(
                                 color = Color.White,
                                 shape = RoundedCornerShape(3.dp)
-                            )
-                            .border(
-                                BorderStroke(1.dp, Color(0xFFB0B0B0)),
-                                RoundedCornerShape(3.dp)
                             ),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextButton(
-                            onClick = {
-                                if (count > 1) {
-                                    count--
-                                    val updatedDrink = drink.copy(
-                                        count = count,
-                                        totalPrice = drink.priceOneDrink * count
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .border(
+                                        1.dp, ColorAccent, RoundedCornerShape(
+                                            topStart = 4.dp,
+                                            bottomStart = 4.dp
+                                        )
                                     )
-                                    onUpdate(updatedDrink)
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "-",
-                                fontSize = 16.sp,
-                                color = ColorPrimaryDark,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        Divider(
-                            color = Color(0xFFE0E0E0),
-                            modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                        )
-                        Text(
-                            text = "$count",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = TextColorHeading,
-                            modifier = Modifier
-                                .weight(1f)
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                        )
-                        Divider(
-                            color = Color(0xFFE0E0E0),
-                            modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                        )
-                        TextButton(
-                            onClick = {
-                                count++
-                                val updatedDrink = drink.copy(
-                                    count = count,
-                                    totalPrice = drink.priceOneDrink * count
+                                    .clickable {
+                                        if (count > 1) {
+                                            count--
+                                            val updatedDrink = drink.copy(
+                                                count = count,
+                                                totalPrice = drink.priceOneDrink * count
+                                            )
+                                            onUpdate(updatedDrink)
+                                        }
+                                    }
+                            ) {
+                                Text(
+                                    text = "-",
+                                    modifier = Modifier
+                                        .align(Alignment.Center),
+                                    fontSize = 18.sp
                                 )
-                                onUpdate(updatedDrink)
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "+",
-                                fontSize = 16.sp,
-                                color = ColorPrimaryDark,
-                                textAlign = TextAlign.Center
-                            )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = (-1).dp)
+                                    .height(20.dp)
+                                    .border(1.dp, ColorAccent, RoundedCornerShape(0.dp))
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Text(
+                                    text = "$count",
+                                    modifier = Modifier.align(Alignment.Center),
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .offset(x = (-2).dp)
+                                    .border(
+                                        1.dp, ColorAccent, RoundedCornerShape(
+                                            topEnd = 4.dp,
+                                            bottomEnd = 4.dp
+                                        )
+                                    )
+                                    .clickable {
+                                        count++
+                                        val updatedDrink = drink.copy(
+                                            count = count,
+                                            totalPrice = drink.priceOneDrink * count
+                                        )
+                                        onUpdate(updatedDrink)
+                                    }
+                            ) {
+                                Text(
+                                    text = "+",
+                                    modifier = Modifier.align(Alignment.Center),
+                                    fontSize = 18.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -376,7 +435,7 @@ private fun CartItem(
             modifier = Modifier.padding(top = 12.dp)
         )
     }
-    
+
 }
 
 @Composable
@@ -594,7 +653,7 @@ fun CartContentPreview() {
             onCheckoutClick = {},
             onDeleteItem = { _, _ -> },
             onUpdateItem = { _, _ -> },
-            onEditItem = {}
+            onEditItem = {_, _ -> }
         )
     }
 }
