@@ -83,6 +83,12 @@ fun CartScreen(
                 selected?.let { viewModel.updateAddress(it) }
             }
     }
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<Voucher?>("selectedVoucher", null)
+            ?.collect { selected ->
+                selected?.let { viewModel.updateVoucher(it) }
+            }
+    }
     CartContent(
         cartItems = cartItems,
         paymentMethod = paymentMethod,
@@ -100,6 +106,9 @@ fun CartScreen(
             navController.navigate("address/$selectedId")
         },
         onVoucherClick = {
+            val selectedId = voucher?.id ?: 0L
+            val amount = totalPrice
+            navController.navigate("voucher/$selectedId/$amount")
         },
         onCheckoutClick = {
             viewModel.checkout { order ->
@@ -540,6 +549,7 @@ private fun SummarySection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 10.dp)
+            .padding(bottom = 16.dp)
     ) {
         Text(
             text = "Thanh toán",
@@ -606,7 +616,7 @@ private fun SummarySection(
             }
             if (voucher != null) {
                 Text(
-                    text = "-" + voucher.discount.toString() + Constant.CURRENCY,
+                    text = "-" + voucher.getPriceDiscount(drinkPrice).toString() + Constant.CURRENCY,
                     fontSize = 14.sp,
                     color = Color(0xFF757575)
                 )

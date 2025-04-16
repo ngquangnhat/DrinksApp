@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +37,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thesun.drinksapp.R
+import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.TextColorHeading
 import com.thesun.drinksapp.ui.theme.White
@@ -105,8 +109,7 @@ fun AddressContent(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-
+                    containerColor = Color.White
                 )
             )
         },
@@ -130,6 +133,7 @@ fun AddressContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(Color.White)
         ) {
             item {
                 Divider(
@@ -168,7 +172,7 @@ fun AddressItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .background(MaterialTheme.colorScheme.surface)
+            .background(Color.White)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -220,7 +224,7 @@ fun AddressItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun AddAddressBottomSheet(
     onDismiss: () -> Unit,
@@ -230,12 +234,16 @@ fun AddAddressBottomSheet(
     var phone by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(),
+        sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = Color.White
+        containerColor = Color.White,
+        modifier = Modifier.wrapContentHeight()
     ) {
         Column(
             modifier = Modifier
@@ -244,82 +252,66 @@ fun AddAddressBottomSheet(
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Title
             Text(
-                text = "Thêm địa chỉ",
+                text = "Thêm địa chỉ giao hàng",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
 
-            // Name field
             Text(
-                text = "Họ và tên",
+                text = "Họ và tên (*)",
                 fontSize = 14.sp,
                 color = Color.Black,
                 modifier = Modifier
                     .align(Alignment.Start)
-                    .padding(top = 30.dp)
+                    .padding(top = 20.dp)
             )
-            TextField(
+            OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 5.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
-                    .background(Color.White, RoundedCornerShape(16.dp)),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    .fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TextColorHeading,
+                    unfocusedBorderColor = ColorAccent,
                 ),
-                textStyle = LocalTextStyle.current.copy(
+                textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = Color.Black
                 ),
+                shape = RoundedCornerShape(16.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next)
             )
 
-            // Phone field
             Text(
-                text = "Số điện thoại",
+                text = "Số điện thoại (*)",
                 fontSize = 14.sp,
                 color = Color.Black,
                 modifier = Modifier
                     .align(Alignment.Start)
                     .padding(top = 16.dp)
             )
-            TextField(
+            OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 5.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
-                    .background(Color.White, RoundedCornerShape(16.dp)),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    .fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TextColorHeading,
+                    unfocusedBorderColor = ColorAccent,
                 ),
-                textStyle = LocalTextStyle.current.copy(
+                textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = Color.Black
                 ),
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
                     imeAction = androidx.compose.ui.text.input.ImeAction.Next
                 )
             )
 
-            // Address field
             Text(
                 text = "Địa chỉ",
                 fontSize = 14.sp,
@@ -328,55 +320,51 @@ fun AddAddressBottomSheet(
                     .align(Alignment.Start)
                     .padding(top = 16.dp)
             )
-            TextField(
+            OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 5.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
-                    .background(Color.White, RoundedCornerShape(16.dp)),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    .fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TextColorHeading,
+                    unfocusedBorderColor = ColorAccent,
                 ),
-                textStyle = LocalTextStyle.current.copy(
+                textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = Color.Black
                 ),
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done)
             )
 
-            // Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 30.dp, bottom = 10.dp),
+                    .padding(top = 20.dp, bottom = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TextButton(
+                Button(
                     onClick = onDismiss,
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 5.dp)
-                        .background(Color(0xFFE0E0E0), RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp)
+                        .padding(end = 5.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = ColorAccent)
                 ) {
                     Text(
                         text = "Hủy",
                         fontSize = 14.sp,
                         color = Color(0xFF212121),
-                        modifier = Modifier.padding(vertical = 10.dp)
                     )
                 }
                 Button(
                     onClick = {
                         if (name.isBlank() || phone.isBlank() || address.isBlank()) {
-                            Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Vui lòng nhập đầy đủ thông tin",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else {
                             onAdd(name, phone, address)
                         }
@@ -391,7 +379,6 @@ fun AddAddressBottomSheet(
                         text = "Thêm",
                         fontSize = 14.sp,
                         color = Color.White,
-                        modifier = Modifier.padding(vertical = 10.dp)
                     )
                 }
             }

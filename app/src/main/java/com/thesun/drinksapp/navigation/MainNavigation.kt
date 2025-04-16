@@ -23,6 +23,7 @@ import com.thesun.drinksapp.ui.rating_reviews.RatingReviewScreen
 import com.thesun.drinksapp.ui.register.RegisterScreen
 import com.thesun.drinksapp.ui.select_address.AddressScreen
 import com.thesun.drinksapp.ui.select_paymethod.PaymentMethodScreen
+import com.thesun.drinksapp.ui.select_voucher.VoucherScreen
 import com.thesun.drinksapp.ui.splash.SplashScreen
 import com.thesun.drinksapp.ui.user.UserScreen
 
@@ -107,6 +108,21 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
             AddressScreen(
                 navController = navController,
                 initialSelectedId = initialSelectedId
+            )
+        }
+        composable(
+            route = "voucher/{voucherId}/{amount}",
+            arguments = listOf(
+                navArgument("voucherId") { type = NavType.LongType; defaultValue = 0L },
+                navArgument("amount") { type = NavType.IntType; defaultValue = 0 }
+            )
+        ) { backStackEntry ->
+            val voucherId = backStackEntry.arguments?.getLong("voucherId") ?: 0L
+            val amount = backStackEntry.arguments?.getInt("amount") ?: 0
+            VoucherScreen(
+                navController = navController,
+                initialSelectedId = voucherId,
+                amount = amount
             )
         }
     }

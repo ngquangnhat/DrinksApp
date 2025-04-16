@@ -1,13 +1,16 @@
 package com.thesun.drinksapp.data.model
 
+import android.os.Parcelable
 import com.thesun.drinksapp.utils.Constant
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Voucher(
     var id: Long = 0,
     var discount: Int = 0,
     var minimum: Int = 0,
     var isSelected: Boolean = false
-) {
+) : Parcelable {
 
     val title: String
         get() = "Giảm giá $discount%"

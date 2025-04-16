@@ -90,9 +90,11 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    fun setVoucher(voucher: Voucher?) {
-        _voucher.value = voucher
-        calculateTotalPrice()
+    fun updateVoucher(voucher: Voucher) {
+        viewModelScope.launch {
+            _voucher.value = voucher
+            calculateTotalPrice()
+        }
     }
 
     fun checkout(navigateToPayment: (Order) -> Unit) {

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -128,7 +129,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                         Filter(Filter.TYPE_FILTER_ALL, context.getString(R.string.filter_all)),
                         Filter(Filter.TYPE_FILTER_RATE, context.getString(R.string.filter_rate)),
                         Filter(Filter.TYPE_FILTER_PRICE, context.getString(R.string.filter_price)),
-                        Filter(Filter.TYPE_FILTER_PROMOTION, context.getString(R.string.filter_promotion)
+                        Filter(
+                            Filter.TYPE_FILTER_PROMOTION,
+                            context.getString(R.string.filter_promotion)
                         ),
                     ),
                     onFilterSelected = { categoryId, newFilter ->
@@ -272,9 +275,11 @@ fun CategoryTabScreen(
     )
     val selectedFilters by selectedFiltersFlow.collectAsState()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.White), verticalArrangement = Arrangement.Top) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White), verticalArrangement = Arrangement.Top
+    ) {
         val coroutineScope = rememberCoroutineScope()
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
@@ -304,7 +309,15 @@ fun CategoryTabScreen(
                     modifier = Modifier
                         .width(130.dp)
                         .background(Color.White),
-                    text = { category.name?.let { Text(text = it.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold) } }
+                    text = {
+                        category.name?.let {
+                            Text(
+                                text = it.uppercase(),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 )
             }
         }
@@ -382,7 +395,7 @@ fun DrinkTabPage(
                 .height(640.dp)
         ) {
             items(drinks) { drink ->
-                DrinkItem(drink){
+                DrinkItem(drink) {
                     navController.navigate("drinkDetail/${drink.id}")
                 }
             }
@@ -429,77 +442,84 @@ fun FilterItem(filter: Filter, onClick: () -> Unit) {
 
 @Composable
 fun DrinkItem(drink: Drink, onClickDrink: () -> Unit) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp)
             .clickable {
                 onClickDrink()
             },
-        verticalAlignment = Alignment.Top
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = rememberAsyncImagePainter(drink.image),
-                contentDescription = drink.name,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier
-                    .offset(y = (-10).dp)
-                    .background(color = Color(0xFFFFF8E1), shape = RoundedCornerShape(10.dp))
-                    .padding(horizontal = 4.dp, vertical = 1.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Color(0xFFFFC107),
-                    modifier = Modifier.size(14.dp)
+        Row (
+            modifier = Modifier.align(Alignment.CenterStart),
+        ){
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = rememberAsyncImagePainter(drink.image),
+                    contentDescription = drink.name,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .offset(y = (-10).dp)
+                        .background(color = Color(0xFFFFF8E1), shape = RoundedCornerShape(10.dp))
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = drink.rate.toString(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier
+                    .padding(top = 10.dp),
+            ) {
                 Text(
-                    text = drink.rate.toString(),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    text = drink.name ?: "",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = drink.description ?: "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
                 )
             }
         }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
         Column(
             modifier = Modifier
-                .weight(1f)
-                .padding(top = 10.dp),
+                .fillMaxHeight()
+                .align(Alignment.CenterEnd)
+                .offset(y=(-10).dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = drink.name ?: "",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = drink.description ?: "",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
-        }
-
-        Column(
-            modifier = Modifier.padding(top = 10.dp, end = 10.dp),
-            horizontalAlignment = Alignment.End) {
-            Text(
-                text = "${drink.price}"+ Constant.CURRENCY,
+                text = "${drink.realPrice}" + Constant.CURRENCY,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
             )
-            if (drink.sale >= 0) {
+            if (drink.sale > 0) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "${drink.realPrice}"+ Constant.CURRENCY,
+                    text = "${drink.price}" + Constant.CURRENCY,
                     style = MaterialTheme.typography.bodySmall.copy(
                         textDecoration = TextDecoration.LineThrough,
                         color = Color.Gray
