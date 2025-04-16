@@ -71,6 +71,18 @@ fun CartScreen(
             viewModel.clearToastMessage()
         }
     }
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<PaymentMethod?>("selectedPaymentMethod", null)
+            ?.collect { selected ->
+                selected?.let { viewModel.updatePaymentMethod(it) }
+            }
+    }
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<Address?>("selectedAddress", null)
+            ?.collect { selected ->
+                selected?.let { viewModel.updateAddress(it) }
+            }
+    }
     CartContent(
         cartItems = cartItems,
         paymentMethod = paymentMethod,
@@ -78,10 +90,14 @@ fun CartScreen(
         voucher = voucher,
         totalPrice = totalPrice,
         itemCount = itemCount,
-        onAddOrderClick = { navController.popBackStack() },
+        onAddOrderClick = { navController.navigate("role_user") },
         onPaymentMethodClick = {
+            val selectedId = paymentMethod?.id ?: 0
+            navController.navigate("payment_method/$selectedId")
         },
         onAddressClick = {
+            val selectedId = address?.id ?: 0L
+            navController.navigate("address/$selectedId")
         },
         onVoucherClick = {
         },
@@ -167,7 +183,7 @@ fun CartContent(
             Divider(
                 color = BgFilter,
                 thickness = 6.dp,
-                modifier = Modifier.padding(bottom = 5.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -561,10 +577,14 @@ private fun SummarySection(
                 color = Color(0xFF757575)
             )
         }
+        Divider(
+            color = ColorAccent,
+            thickness = 1.dp,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(

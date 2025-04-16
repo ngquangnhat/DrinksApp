@@ -21,6 +21,8 @@ import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
 import com.thesun.drinksapp.ui.rating_reviews.RatingReviewScreen
 import com.thesun.drinksapp.ui.register.RegisterScreen
+import com.thesun.drinksapp.ui.select_address.AddressScreen
+import com.thesun.drinksapp.ui.select_paymethod.PaymentMethodScreen
 import com.thesun.drinksapp.ui.splash.SplashScreen
 import com.thesun.drinksapp.ui.user.UserScreen
 
@@ -86,6 +88,26 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         }
         composable("cart") {
             CartScreen(navController = navController)
+        }
+        composable(
+            route = "payment_method/{initialSelectedId}",
+            arguments = listOf(navArgument("initialSelectedId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val initialSelectedId = backStackEntry.arguments?.getInt("initialSelectedId") ?: 0
+            PaymentMethodScreen(
+                navController = navController,
+                initialSelectedId = initialSelectedId
+            )
+        }
+        composable(
+            route = "address/{initialSelectedId}",
+            arguments = listOf(navArgument("initialSelectedId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val initialSelectedId = backStackEntry.arguments?.getLong("initialSelectedId") ?: 0L
+            AddressScreen(
+                navController = navController,
+                initialSelectedId = initialSelectedId
+            )
         }
     }
 }

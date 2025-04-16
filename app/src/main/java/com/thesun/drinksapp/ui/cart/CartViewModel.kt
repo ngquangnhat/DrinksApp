@@ -78,13 +78,16 @@ class CartViewModel @Inject constructor(
             calculateTotalPrice()
         }
     }
-
-    fun setPaymentMethod(method: PaymentMethod?) {
-        _paymentMethod.value = method
+    fun updatePaymentMethod(paymentMethod: PaymentMethod) {
+        viewModelScope.launch {
+            _paymentMethod.value = paymentMethod
+        }
     }
 
-    fun setAddress(address: Address?) {
-        _address.value = address
+    fun updateAddress(address: Address) {
+        viewModelScope.launch {
+            _address.value = address
+        }
     }
 
     fun setVoucher(voucher: Voucher?) {
