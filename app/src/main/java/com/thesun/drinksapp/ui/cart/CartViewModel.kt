@@ -13,6 +13,7 @@ import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.PaymentMethod
 import com.thesun.drinksapp.data.model.Voucher
 import com.thesun.drinksapp.data.repository.DrinkRepository
+import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,7 +91,7 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    fun updateVoucher(voucher: Voucher) {
+    fun updateVoucher(voucher: Voucher?) {
         viewModelScope.launch {
             _voucher.value = voucher
             calculateTotalPrice()
@@ -113,7 +114,7 @@ class CartViewModel @Inject constructor(
 
         val order = Order(
             id = System.currentTimeMillis(),
-            userEmail = "user@example.com",
+            userEmail = user?.email,
             dateTime = System.currentTimeMillis().toString(),
             drinks = _cartItems.value.map {
                 DrinkOrder(it.name, it.option, it.count, it.priceOneDrink, it.image)
@@ -126,7 +127,6 @@ class CartViewModel @Inject constructor(
             status = Order.STATUS_NEW
         )
         navigateToPayment(order)
-        _toastMessage.value = "Đặt hàng thành công"
     }
 
     private fun calculateTotalPrice() {

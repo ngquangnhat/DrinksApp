@@ -59,13 +59,18 @@ fun VoucherScreen(
         onBackClick = { navController.popBackStack() },
         onVoucherClick = { voucher ->
             viewModel.selectVoucher(voucher)
-            val result = Voucher(
-                id = voucher.id,
-                discount = voucher.discount,
-                minimum = voucher.minimum,
-                isSelected = true
-            )
-            navController.previousBackStackEntry?.savedStateHandle?.set("selectedVoucher", result)
+            val isDeselected = voucher.isSelected
+            if (isDeselected) {
+                navController.previousBackStackEntry?.savedStateHandle?.set("selectedVoucher", null)
+            } else {
+                val result = Voucher(
+                    id = voucher.id,
+                    discount = voucher.discount,
+                    minimum = voucher.minimum,
+                    isSelected = true
+                )
+                navController.previousBackStackEntry?.savedStateHandle?.set("selectedVoucher", result)
+            }
             navController.popBackStack()
         },
         initialSelectedId = initialSelectedId
@@ -125,7 +130,7 @@ fun VoucherContent(
                     VoucherItem(
                         voucher = voucher,
                         amount = amount,
-                        isSelected = voucher.id == initialSelectedId || voucher.isSelected,
+                        isSelected = voucher.isSelected,
                         onClick = { onVoucherClick(voucher) }
                     )
                 }
@@ -160,7 +165,7 @@ fun SearchBar(
 fun VoucherItem(
     voucher: Voucher,
     amount: Int,
-    isSelected: Boolean,
+    isSelected: Boolean = voucher.isSelected,
     onClick: () -> Unit
 ) {
     Column(

@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.cart
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.gson.Gson
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Address
 import com.thesun.drinksapp.data.model.Drink
@@ -86,7 +88,7 @@ fun CartScreen(
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<Voucher?>("selectedVoucher", null)
             ?.collect { selected ->
-                selected?.let { viewModel.updateVoucher(it) }
+                viewModel.updateVoucher(selected)
             }
     }
     CartContent(
@@ -112,6 +114,8 @@ fun CartScreen(
         },
         onCheckoutClick = {
             viewModel.checkout { order ->
+                val orderJson = Uri.encode(Gson().toJson(order))
+                navController.navigate("payment/$orderJson")
             }
         },
         onDeleteItem = { drink, position -> viewModel.deleteCartItem(drink, position) },

@@ -40,9 +40,11 @@ class VoucherViewModel @Inject constructor(
 
     fun selectVoucher(voucher: Voucher) {
         viewModelScope.launch {
+            val isCurrentlySelected = voucher.isSelected
             _vouchers.value = _vouchers.value.map { item ->
-                item.copy(isSelected = item.id == voucher.id)
+                item.copy(isSelected = if (item.id == voucher.id) !isCurrentlySelected else false)
             }
+            selectedVoucherId = if (isCurrentlySelected) 0 else voucher.id
         }
     }
 

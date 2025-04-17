@@ -13,13 +13,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.gson.Gson
+import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
 import com.thesun.drinksapp.ui.cart.CartScreen
 import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
+import com.thesun.drinksapp.ui.payment.PaymentScreen
 import com.thesun.drinksapp.ui.rating_reviews.RatingReviewScreen
+import com.thesun.drinksapp.ui.receipt_order.ReceiptOrderScreen
 import com.thesun.drinksapp.ui.register.RegisterScreen
 import com.thesun.drinksapp.ui.select_address.AddressScreen
 import com.thesun.drinksapp.ui.select_paymethod.PaymentMethodScreen
@@ -123,6 +126,37 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
                 navController = navController,
                 initialSelectedId = voucherId,
                 amount = amount
+            )
+        }
+        composable(
+            route = "payment/{orderJson}",
+            arguments = listOf(navArgument("orderJson") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val json = backStackEntry.arguments?.getString("orderJson") ?: ""
+            val order = Gson().fromJson(Uri.decode(json), Order::class.java)
+            PaymentScreen(
+                navController = navController,
+                order = order
+            )
+        }
+        composable(
+            route = "receipt_order/{orderId}",
+            arguments = listOf(navArgument("orderId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getLong("orderId") ?: 0L
+            ReceiptOrderScreen(
+                navController = navController,
+                orderId = orderId
+            )
+        }
+        composable(
+            route = "tracking_order/{orderId}",
+            arguments = listOf(navArgument("orderId") { type = NavType.LongType })
+        ){
+            val orderId = it.arguments?.getLong("orderId") ?: 0L
+            ReceiptOrderScreen(
+                navController = navController,
+                orderId = orderId
             )
         }
     }
