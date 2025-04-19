@@ -77,7 +77,7 @@ class RatingReviewViewModel @Inject constructor(
                             "rate" to ratingObj.rate,
                             "review" to ratingObj.review
                         )
-                        ratingReviewRepository.getFeedbackRef()
+                        ratingReviewRepository.getRatingOrderRef()
                             .child(ratingReview!!.id)
                             .updateChildren(updates)
                             .await()

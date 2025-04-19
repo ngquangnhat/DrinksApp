@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.tracking_order
 
+import android.graphics.fonts.FontStyle
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -71,7 +72,9 @@ fun TrackingOrderScreen(
         order = order,
         isAdmin = false,
         onBackClick = { navController.popBackStack() },
-        onReceiptClick = { navController.navigate("receipt_order/$orderId") },
+        onReceiptClick = {
+            navController.popBackStack()
+            navController.navigate("receipt_order/$orderId") },
         onStatusUpdate = { status ->
             viewModel.updateOrderStatus(orderId, status) { success ->
                 if (success && status == Order.STATUS_COMPLETE) {
@@ -81,6 +84,7 @@ fun TrackingOrderScreen(
                     )
                     val json = Gson().toJson(ratingReview)
                     val encodedJson = URLEncoder.encode(json, "UTF-8")
+                    navController.popBackStack()
                     navController.navigate("rating_reviews/$encodedJson")
                 }
             }
@@ -191,9 +195,10 @@ fun TrackingOrderContent(
                     }
                     if (order.status == Order.STATUS_ARRIVED) {
                         Text(
-                            text = "Vui lòng xác nhận khi nhận được đơn hàng",
+                            text = "Vui lòng kiểm tra kỹ khi nhận được đơn hàng",
                             fontSize = 14.sp,
                             color = TextColorHeading,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 10.dp),
@@ -312,7 +317,7 @@ fun TrackingOrderContentPreview() {
                         image = "https://example.com/ca-phe.jpg"
                     )
                 ),
-                status = Order.STATUS_DOING
+                status = Order.STATUS_ARRIVED
             ),
             isAdmin = false,
             onBackClick = {},

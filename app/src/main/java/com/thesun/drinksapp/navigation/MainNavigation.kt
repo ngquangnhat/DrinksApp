@@ -28,6 +28,7 @@ import com.thesun.drinksapp.ui.select_address.AddressScreen
 import com.thesun.drinksapp.ui.select_paymethod.PaymentMethodScreen
 import com.thesun.drinksapp.ui.select_voucher.VoucherScreen
 import com.thesun.drinksapp.ui.splash.SplashScreen
+import com.thesun.drinksapp.ui.tracking_order.TrackingOrderScreen
 import com.thesun.drinksapp.ui.user.UserScreen
 
 @Composable
@@ -37,13 +38,27 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         startDestination = "splash",
         enterTransition = {
             slideInHorizontally(
-                animationSpec = tween(500),
-                initialOffsetX = { it })
+                initialOffsetX = { it },
+                animationSpec = tween(300)
+            )
         },
         exitTransition = {
             slideOutHorizontally(
-                animationSpec = tween(500),
-                targetOffsetX = { -it })
+                targetOffsetX = { -it },
+                animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it },
+                animationSpec = tween(300)
+            )
         }
     ) {
         composable("splash") {
@@ -154,7 +169,7 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
             arguments = listOf(navArgument("orderId") { type = NavType.LongType })
         ){
             val orderId = it.arguments?.getLong("orderId") ?: 0L
-            ReceiptOrderScreen(
+            TrackingOrderScreen(
                 navController = navController,
                 orderId = orderId
             )

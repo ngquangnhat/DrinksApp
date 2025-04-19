@@ -68,7 +68,9 @@ fun ReceiptOrderScreen(
     ReceiptOrderContent(
         order = order,
         onBackClick = { navController.popBackStack() },
-        onTrackOrderClick = { navController.navigate("tracking_order/$orderId") }
+        onTrackOrderClick = {
+            navController.popBackStack()
+            navController.navigate("tracking_order/$orderId") }
     )
 }
 
@@ -83,7 +85,7 @@ fun ReceiptOrderContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hóa đơn",  color = Color(0xFF212121)) },
+                title = { Text("Hóa đơn", color = Color(0xFF212121)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -102,6 +104,7 @@ fun ReceiptOrderContent(
                     onClick = onTrackOrderClick,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(Color.White)
                         .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
                     shape = RoundedCornerShape(6.dp)
@@ -116,17 +119,16 @@ fun ReceiptOrderContent(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = ColorPrimary)
-            }
+                    .padding(padding)
+                    .background(Color.White)
+            )
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .background(Color.White)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Divider(
                     color = Color(0xFFE0E0E0),
@@ -137,11 +139,11 @@ fun ReceiptOrderContent(
                         .fillMaxSize()
                         .background(Color.White)
                         .padding(10.dp)
-                        .verticalScroll(rememberScrollState()),
                 ) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentHeight()
                             .padding(top = 30.dp),
                         shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, ColorAccent),
@@ -216,13 +218,20 @@ fun ReceiptOrderContent(
                                 fontWeight = FontWeight.Bold,
                                 color = TextColorHeading
                             )
-                            LazyColumn(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(max = 200.dp)
                             ) {
-                                items(order.drinks ?: emptyList()) { drink ->
-                                    DrinkOrderItem(drink)
+                                if (order.drinks.isNullOrEmpty()) {
+                                    Text(
+                                        text = "Không có món",
+                                        modifier = Modifier.padding(16.dp),
+                                        color = TextColorSecondary
+                                    )
+                                } else {
+                                    order.drinks!!.forEach { drink ->
+                                        DrinkOrderItem(drink)
+                                    }
                                 }
                             }
                             Divider(

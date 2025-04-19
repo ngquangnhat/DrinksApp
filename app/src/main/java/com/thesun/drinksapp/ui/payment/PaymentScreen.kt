@@ -50,10 +50,8 @@ fun PaymentScreen(
         when (uiState) {
             is PaymentUiState.Success -> {
                 val orderId = (uiState as PaymentUiState.Success).orderId
-                navController.navigate("receipt_order/$orderId") {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
-                }
+                navController.popBackStack()
+                navController.navigate("receipt_order/$orderId")
             }
             is PaymentUiState.Error -> {
             }
@@ -85,20 +83,10 @@ fun PaymentContent(
                 )
             }
             is PaymentUiState.Success -> {
-                Text(
-                    text = "Thanh toán thành công!",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+
             }
             is PaymentUiState.Error -> {
-                Text(
-                    text = uiState.message,
-                    fontSize = 16.sp,
-                    color = Color.Red,
-                    modifier = Modifier
-                )
+
             }
         }
     }

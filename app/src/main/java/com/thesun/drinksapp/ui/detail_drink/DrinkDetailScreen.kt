@@ -101,6 +101,7 @@ fun DrinkDetailScreen(
                 }
             } else {
                 viewModel.addToCart {
+                    navController.popBackStack()
                     navController.navigate("cart")
                 }
             }

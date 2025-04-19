@@ -9,9 +9,10 @@ class RatingReviewRepository @Inject constructor(
     fun getRatingDrinkRef(drinkId: String): DatabaseReference {
         return firebaseRepository.getRatingDrinkDatabaseReference(drinkId)
     }
-    fun getFeedbackRef(): DatabaseReference {
-        return firebaseRepository.getFeedbackDatabaseReference()
+    fun getRatingOrderRef(): DatabaseReference {
+        return firebaseRepository.getOrderDatabaseReference()
     }
+
 
 
 }

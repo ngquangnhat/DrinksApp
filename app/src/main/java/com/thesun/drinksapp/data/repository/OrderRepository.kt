@@ -12,4 +12,9 @@ class OrderRepository @Inject constructor(
     fun getOrderDetailDatabaseRef(orderId: Long) : DatabaseReference {
         return firebaseRepository.getOrderDetailDatabaseReference(orderId)
     }
+
+    fun getAllOrderDatabaseRef() : DatabaseReference {
+        return firebaseRepository.getOrderDatabaseReference()
+    }
+
 }

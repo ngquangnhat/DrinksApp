@@ -115,6 +115,7 @@ fun CartScreen(
         onCheckoutClick = {
             viewModel.checkout { order ->
                 val orderJson = Uri.encode(Gson().toJson(order))
+                navController.popBackStack()
                 navController.navigate("payment/$orderJson")
             }
         },

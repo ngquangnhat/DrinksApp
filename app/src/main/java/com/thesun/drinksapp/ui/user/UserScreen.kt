@@ -13,12 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -41,7 +47,7 @@ import com.thesun.drinksapp.navigation.BottomNavItem
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.White
-import com.thesun.drinksapp.ui.user.history_tab.HistoryTabScreen
+import com.thesun.drinksapp.ui.user.history_tab.HistoryScreen
 import com.thesun.drinksapp.ui.user.home_tab.HomeScreen
 import com.thesun.drinksapp.ui.user.profile_tab.ProfileTabScreen
 
@@ -55,6 +61,7 @@ fun UserScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserScreenUI(
     navMainController: NavHostController,
@@ -80,6 +87,35 @@ fun UserScreenUI(
     )
 
     Scaffold(
+        topBar = {
+            if (currentDestination == BottomNavItem.Category.route ||
+                currentDestination == BottomNavItem.Profile.route) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = when (currentDestination) {
+                                BottomNavItem.Category.route -> "History"
+                                BottomNavItem.Profile.route -> "Profile"
+                                else -> ""
+                            },
+                            color = Color(0xFF212121)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Quay lại",
+                                tint = Color(0xFF212121)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White
+                    )
+                )
+            }
+        },
         bottomBar = {
             NavigationBar(
                 containerColor = White,
@@ -131,24 +167,16 @@ fun UserScreenUI(
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.background(Color.White).padding(paddingValues)) {
+        Column(modifier = Modifier
+            .background(Color.White)
+            .padding(paddingValues)) {
             NavHost(
                 navController = navController,
                 startDestination = BottomNavItem.Home.route,
                 modifier = Modifier.weight(1f),
-                enterTransition = {
-                    slideInHorizontally(
-                        animationSpec = tween(500),
-                        initialOffsetX = { it })
-                },
-                exitTransition = {
-                    slideOutHorizontally(
-                        animationSpec = tween(500),
-                        targetOffsetX = { -it })
-                }
             ) {
                 composable(BottomNavItem.Home.route) { HomeScreen(navMainController) }
-                composable(BottomNavItem.Category.route) { HistoryTabScreen() }
+                composable(BottomNavItem.Category.route) { HistoryScreen(navMainController) }
                 composable(BottomNavItem.Profile.route) { ProfileTabScreen() }
             }
             CartBottomBar(
