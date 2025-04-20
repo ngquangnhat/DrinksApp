@@ -2,19 +2,16 @@ package com.thesun.drinksapp.constant
 
 interface AboutUsConfig {
     companion object {
-        const val ABOUT_US_TITLE = "TinCoder"
-        const val ABOUT_US_CONTENT =
-            "Provides Android, iOS, Web Source Codes and Development Services. " +
-                    "Highly Committed to Quality Products and Excellent Services."
-        const val ABOUT_US_WEBSITE_TITLE = "Website TinCoder"
-        const val PAGE_FACEBOOK = "fb://page/tincoder"
-        const val LINK_FACEBOOK = "https://www.facebook.com/tincoder"
-        const val LINK_YOUTUBE = "https://www.youtube.com/channel/UCu3DXfXYgygIYXN8TduNcNQ"
-        const val PHONE_NUMBER = "+84392229676"
-        const val GMAIL = "mixproduction29932@gmail.com"
-        const val SKYPE_ID = "dangtin29932"
-        const val ZALO_LINK = "https://zalo.me/0392229676"
-        const val WEBSITE =
-            "https://alabaster-drop-b52.notion.site/TinCoder-Full-Source-Code-Android-c1f9d9d224004932823b6d5061c80dbc"
+        const val ABOUT_US_TITLE = "Shopfee House"
+        const val ABOUT_US_CONTENT = "A cozy drink shop serving refreshing beverages and sweet moments every day."
+        const val ABOUT_US_WEBSITE_TITLE = "Our Website"
+        const val PAGE_FACEBOOK = "fb://page/haui"
+        const val LINK_FACEBOOK = "https://www.facebook.com/Ng.QuangNhat.22.11.2003"
+        const val LINK_YOUTUBE = "https://www.youtube.com/@PhilippLackner"
+        const val PHONE_NUMBER = "+84988710831"
+        const val GMAIL = "quangnhat2211dev@@gmail.com"
+        const val SKYPE_ID = "2uangnhatxyz123"
+        const val ZALO_LINK = "https://zalo.me/g/ncimnn998"
+        const val WEBSITE = "https://github.com/ngquangnhat"
     }
 }

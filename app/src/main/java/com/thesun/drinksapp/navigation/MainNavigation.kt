@@ -17,7 +17,10 @@ import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
 import com.thesun.drinksapp.ui.cart.CartScreen
+import com.thesun.drinksapp.ui.change_password.ChangePasswordScreen
+import com.thesun.drinksapp.ui.contact.ContactScreen
 import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
+import com.thesun.drinksapp.ui.feedback.FeedbackScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
 import com.thesun.drinksapp.ui.payment.PaymentScreen
@@ -173,6 +176,15 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
                 navController = navController,
                 orderId = orderId
             )
+        }
+        composable(route = "feedback"){
+            FeedbackScreen(navController = navController)
+        }
+        composable(route = "contact"){
+           ContactScreen(navController = navController)
+        }
+        composable(route = "change_password"){
+            ChangePasswordScreen(navController = navController)
         }
     }
 }

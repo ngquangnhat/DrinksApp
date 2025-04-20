@@ -123,20 +123,21 @@ fun HistoryContent(
             tabs.forEachIndexed { index, tab ->
                 Tab(
                     selected = index == selectedTabIndex,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White),
                     onClick = {
                         selectedTabIndex = index
                         coroutineScope.launch { pagerState.animateScrollToPage(index) }
                     },
                     selectedContentColor = ColorPrimaryDark,
                     unselectedContentColor = ColorAccent,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White),
                     text = {
                         Text(
                             text = tab.name.uppercase(),
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 10.dp)
                         )
                     }
                 )
@@ -195,11 +196,11 @@ fun DoneOrderScreen(
 
 @Composable
 fun OrderList(orders: List<Order>, isAdmin: Boolean, navController: NavController) {
-    LazyColumn (
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
-    ){
+    ) {
         items(orders) { order ->
             OrderItem(
                 order = order,

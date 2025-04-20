@@ -1,4 +1,4 @@
-package com.thesun.drinksapp.components
+package com.thesun.drinksapp.ui.bottom_cart
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thesun.drinksapp.R
-import com.thesun.drinksapp.ui.bottom_cart.BottomCartViewModel
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.utils.Constant
 

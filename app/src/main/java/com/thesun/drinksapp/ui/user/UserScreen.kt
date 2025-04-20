@@ -4,9 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,14 +39,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.thesun.drinksapp.R
-import com.thesun.drinksapp.components.CartBottomBar
+import com.thesun.drinksapp.ui.bottom_cart.CartBottomBar
 import com.thesun.drinksapp.navigation.BottomNavItem
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.White
 import com.thesun.drinksapp.ui.user.history_tab.HistoryScreen
 import com.thesun.drinksapp.ui.user.home_tab.HomeScreen
-import com.thesun.drinksapp.ui.user.profile_tab.ProfileTabScreen
+import com.thesun.drinksapp.ui.user.profile_tab.AccountScreen
 
 @Composable
 fun UserScreen(
@@ -94,8 +91,8 @@ fun UserScreenUI(
                     title = {
                         Text(
                             text = when (currentDestination) {
-                                BottomNavItem.Category.route -> "History"
-                                BottomNavItem.Profile.route -> "Profile"
+                                BottomNavItem.Category.route -> "Lịch sử"
+                                BottomNavItem.Profile.route -> "Trang cá nhân"
                                 else -> ""
                             },
                             color = Color(0xFF212121)
@@ -177,7 +174,7 @@ fun UserScreenUI(
             ) {
                 composable(BottomNavItem.Home.route) { HomeScreen(navMainController) }
                 composable(BottomNavItem.Category.route) { HistoryScreen(navMainController) }
-                composable(BottomNavItem.Profile.route) { ProfileTabScreen() }
+                composable(BottomNavItem.Profile.route) { AccountScreen(navMainController) }
             }
             CartBottomBar(
                 onClick = { onGoToCard() }
