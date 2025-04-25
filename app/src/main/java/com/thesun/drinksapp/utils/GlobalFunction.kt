@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
+import android.view.inputmethod.InputMethodManager
 import androidx.core.app.ActivityCompat
 import com.thesun.drinksapp.constant.AboutUsConfig
 import com.thesun.drinksapp.prefs.DataStoreManager
@@ -118,6 +119,16 @@ object GlobalFunction {
             callIntent.data = Uri.parse("tel:${AboutUsConfig.PHONE_NUMBER}")
             activity.startActivity(callIntent)
         } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+    @JvmStatic
+    fun hideSoftKeyboard(activity: Activity) {
+        try {
+            val inputMethodManager =
+                activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, 0)
+        } catch (ex: NullPointerException) {
             ex.printStackTrace()
         }
     }
