@@ -1,6 +1,8 @@
 package com.thesun.drinksapp.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.thesun.drinksapp.data.repository.FirebaseRepository
 import dagger.Module
 import dagger.Provides
@@ -17,5 +19,10 @@ object FirebaseModule {
     @Singleton
     fun provideFirebaseRepository(): FirebaseRepository {
         return FirebaseRepository()
+    }
+    @Provides
+    @Singleton
+    fun provideStorageReference(): StorageReference {
+        return FirebaseStorage.getInstance().getReference("images")
     }
 }

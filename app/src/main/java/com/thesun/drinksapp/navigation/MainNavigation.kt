@@ -16,6 +16,8 @@ import com.google.gson.Gson
 import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
+import com.thesun.drinksapp.ui.admin.categories.add_category.AddCategoryScreen
+import com.thesun.drinksapp.ui.admin.drinks.add_drink.AdminAddDrinkScreen
 import com.thesun.drinksapp.ui.cart.CartScreen
 import com.thesun.drinksapp.ui.change_password.ChangePasswordScreen
 import com.thesun.drinksapp.ui.contact.ContactScreen
@@ -186,5 +188,24 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         composable(route = "change_password"){
             ChangePasswordScreen(navController = navController)
         }
+        composable("add_category") {
+            AddCategoryScreen(navController)
+        }
+        composable("edit_category/{id}") { backStackEntry ->
+            AddCategoryScreen(
+                navController = navController,
+                categoryId = backStackEntry.arguments?.getString("id")
+            )
+        }
+        composable("add_drink") {
+            AdminAddDrinkScreen(navController)
+        }
+        composable("edit_drink/{id}") { backStackEntry ->
+            AdminAddDrinkScreen(
+                navController = navController,
+                drinkId = backStackEntry.arguments?.getString("id")
+            )
+        }
+
     }
 }

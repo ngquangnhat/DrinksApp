@@ -40,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.navigation.AdminNavItem
 import com.thesun.drinksapp.ui.admin.categories.AdminCategoryScreen
+import com.thesun.drinksapp.ui.admin.drinks.AdminDrinkScreen
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.White
@@ -137,7 +138,7 @@ fun AdminScreenUI(
                 modifier = Modifier.weight(1f).background(Color.White)
             ) {
                 composable(AdminNavItem.Category.route) { AdminCategoryScreen(navMainController) }
-                composable(AdminNavItem.Drink.route) { DrinkScreen() }
+                composable(AdminNavItem.Drink.route) { AdminDrinkScreen(navMainController) }
                 composable(AdminNavItem.Order.route) { OrderScreen() }
                 composable(AdminNavItem.Settings.route) { SettingsScreen() }
             }
