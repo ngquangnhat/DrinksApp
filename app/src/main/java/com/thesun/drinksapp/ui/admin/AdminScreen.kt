@@ -44,6 +44,7 @@ import com.thesun.drinksapp.ui.admin.drinks.AdminDrinkScreen
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.White
+import com.thesun.drinksapp.ui.user.history_tab.HistoryScreen
 
 @Composable
 fun AdminScreen(
@@ -139,7 +140,7 @@ fun AdminScreenUI(
             ) {
                 composable(AdminNavItem.Category.route) { AdminCategoryScreen(navMainController) }
                 composable(AdminNavItem.Drink.route) { AdminDrinkScreen(navMainController) }
-                composable(AdminNavItem.Order.route) { OrderScreen() }
+                composable(AdminNavItem.Order.route) { HistoryScreen(navMainController) }
                 composable(AdminNavItem.Settings.route) { SettingsScreen() }
             }
         }
@@ -176,15 +177,6 @@ fun AdminScreenUI(
             }
         )
     }
-}
-@Composable
-fun DrinkScreen() {
-    Text(text = "Drink Screen", modifier = Modifier.padding(16.dp))
-}
-
-@Composable
-fun OrderScreen() {
-    Text(text = "Order Screen", modifier = Modifier.padding(16.dp))
 }
 
 @Composable

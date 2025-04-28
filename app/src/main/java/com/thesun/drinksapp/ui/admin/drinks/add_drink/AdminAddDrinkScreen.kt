@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
@@ -62,6 +64,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.SubcomposeAsyncImage
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Category
 import com.thesun.drinksapp.data.model.Drink
@@ -294,7 +297,7 @@ fun AdminAddDrinkScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(White, RoundedCornerShape(6.dp))
-                    .padding( vertical = 8.dp),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
@@ -381,11 +384,56 @@ fun AdminAddDrinkScreenContent(
                     focusedBorderColor = ColorPrimaryDark,
                     unfocusedBorderColor = Color.Gray
                 ),
-                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = ColorPrimaryDark),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 14.sp,
+                    color = ColorPrimaryDark
+                ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true,
-                placeholder = { Text("Enter image URL", fontSize = 14.sp, color = Color.Gray) }
+                placeholder = {
+                    Text(
+                        "Nhập đường dẫn URL...",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
             )
+            if (image.isNotBlank()) {
+                Card(
+                    shape = RoundedCornerShape(6.dp),
+                    modifier = Modifier
+                        .size(width = 100.dp, height = 80.dp)
+                        .padding(top = 8.dp)
+                ) {
+                    SubcomposeAsyncImage(
+                        model = image,
+                        contentDescription = "Image Preview",
+                        modifier = Modifier
+                            .height(80.dp)
+                            .align(Alignment.Start)
+                            .padding(top = 8.dp),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        loading = {
+                            Text(
+                                text = "Đang tải ảnh...",
+                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        },
+                        error = {
+                            Text(
+                                text = "Lỗi",
+                                fontSize = 14.sp,
+                                color = Color.Red,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    )
+
+                }
+            }
+
 
             Text(
                 text = stringResource(R.string.label_image_large),
@@ -403,11 +451,56 @@ fun AdminAddDrinkScreenContent(
                     focusedBorderColor = ColorPrimaryDark,
                     unfocusedBorderColor = Color.Gray
                 ),
-                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = ColorPrimaryDark),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 14.sp,
+                    color = ColorPrimaryDark
+                ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true,
-                placeholder = { Text("Enter banner URL", fontSize = 14.sp, color = Color.Gray) }
+                placeholder = {
+                    Text(
+                        "Nhập đường dẫn URL banner...",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
             )
+            if (imageBanner.isNotBlank()) {
+                Card(
+                    shape = RoundedCornerShape(6.dp),
+                    modifier = Modifier
+                        .size(width = 100.dp, height = 80.dp)
+                        .padding(top = 8.dp)
+                ) {
+                    SubcomposeAsyncImage(
+                        model = imageBanner,
+                        contentDescription = "Banner Preview",
+                        modifier = Modifier
+                            .height(80.dp)
+                            .align(Alignment.Start)
+                            .padding(top = 8.dp),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        loading = {
+                            Text(
+                                text = "Đang tải ảnh...",
+                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        },
+                        error = {
+                            Text(
+                                text = "Lỗi",
+                                fontSize = 14.sp,
+                                color = Color.Red,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    )
+
+                }
+
+            }
 
             Row(
                 modifier = Modifier
@@ -499,5 +592,5 @@ fun CategoryDropdownPreview() {
         Category(id = 1, name = "Cà phê"),
         Category(id = 2, name = "Trà")
     )
-    CategoryDropdown (categories, categories.first(), {})
+    CategoryDropdown(categories, categories.first(), {})
 }
