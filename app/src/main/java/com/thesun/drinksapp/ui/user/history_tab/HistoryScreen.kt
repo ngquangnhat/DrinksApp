@@ -249,7 +249,7 @@ fun OrderItem(
                         modifier = Modifier.padding(bottom = 10.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.image_drink_example),
+                            painter = painterResource(R.drawable.ic_avatar_default),
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = Color.Unspecified

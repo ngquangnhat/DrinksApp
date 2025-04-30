@@ -39,6 +39,7 @@ import com.thesun.drinksapp.data.model.Address
 import com.thesun.drinksapp.data.model.DrinkOrder
 import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.RatingReview
+import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import com.thesun.drinksapp.ui.receipt_order.DrinkOrderItem
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
@@ -70,7 +71,7 @@ fun TrackingOrderScreen(
 
     TrackingOrderContent(
         order = order,
-        isAdmin = false,
+        isAdmin = user!!.isAdmin,
         onBackClick = { navController.popBackStack() },
         onReceiptClick = {
             navController.popBackStack()
@@ -135,12 +136,11 @@ fun TrackingOrderContent(
                     color = Color(0xFFE0E0E0),
                     thickness = 1.dp,
                 )
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 200.dp)
                 ) {
-                    items(order.drinks ?: emptyList()) { drink ->
+                    order.drinks!!.forEach { drink ->
                         DrinkOrderItem(drink)
                     }
                 }

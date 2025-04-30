@@ -18,6 +18,11 @@ import com.thesun.drinksapp.data.model.RatingReview
 import com.thesun.drinksapp.ui.admin.AdminScreen
 import com.thesun.drinksapp.ui.admin.categories.add_category.AddCategoryScreen
 import com.thesun.drinksapp.ui.admin.drinks.add_drink.AdminAddDrinkScreen
+import com.thesun.drinksapp.ui.admin.feedbacks.AdminFeedbackScreen
+import com.thesun.drinksapp.ui.admin.toppings.AdminToppingScreen
+import com.thesun.drinksapp.ui.admin.toppings.add_topping.AddToppingScreen
+import com.thesun.drinksapp.ui.admin.vouchers.AdminVoucherScreen
+import com.thesun.drinksapp.ui.admin.vouchers.add_voucher.AdminAddVoucherScreen
 import com.thesun.drinksapp.ui.cart.CartScreen
 import com.thesun.drinksapp.ui.change_password.ChangePasswordScreen
 import com.thesun.drinksapp.ui.contact.ContactScreen
@@ -98,11 +103,15 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
             val drinkId = backStackEntry.arguments?.getLong("drinkId") ?: 0L
             val indexString = backStackEntry.arguments?.getString("index")
             val index = indexString?.toIntOrNull() ?: -1
-            DrinkDetailScreen(drinkId = drinkId, cartItemIndex = index, navController = navController)
+            DrinkDetailScreen(
+                drinkId = drinkId,
+                cartItemIndex = index,
+                navController = navController
+            )
         }
         composable(
             route = "rating_reviews/{ratingReviewJson}",
-        ) {backStackEntry ->
+        ) { backStackEntry ->
             val json = backStackEntry.arguments?.getString("ratingReviewJson") ?: ""
             val ratingReview = Gson().fromJson(Uri.decode(json), RatingReview::class.java)
             RatingReviewScreen(
@@ -172,20 +181,20 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
         composable(
             route = "tracking_order/{orderId}",
             arguments = listOf(navArgument("orderId") { type = NavType.LongType })
-        ){
+        ) {
             val orderId = it.arguments?.getLong("orderId") ?: 0L
             TrackingOrderScreen(
                 navController = navController,
                 orderId = orderId
             )
         }
-        composable(route = "feedback"){
+        composable(route = "feedback") {
             FeedbackScreen(navController = navController)
         }
-        composable(route = "contact"){
-           ContactScreen(navController = navController)
+        composable(route = "contact") {
+            ContactScreen(navController = navController)
         }
-        composable(route = "change_password"){
+        composable(route = "change_password") {
             ChangePasswordScreen(navController = navController)
         }
         composable("add_category") {
@@ -206,6 +215,38 @@ fun MainNavigation(modifier: Modifier = Modifier, navController: NavHostControll
                 drinkId = backStackEntry.arguments?.getString("id")
             )
         }
-
+        composable("manage_topping") {
+            AdminToppingScreen(navController = navController)
+        }
+        composable("add_topping") {
+            AddToppingScreen(navController)
+        }
+        composable(
+            "edit_topping/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.LongType })
+        ) { backStackEntry ->
+            AddToppingScreen(
+                navController = navController,
+                toppingId = backStackEntry.arguments?.getLong("id")
+            )
+        }
+        composable("manage_voucher") {
+            AdminVoucherScreen(navController = navController)
+        }
+        composable("add_voucher") {
+            AdminAddVoucherScreen(navController)
+        }
+        composable(
+            "edit_voucher/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.LongType })
+        ) { backStackEntry ->
+            AdminAddVoucherScreen(
+                navController = navController,
+                voucherId = backStackEntry.arguments?.getLong("id")
+            )
+        }
+        composable("manage_feedback") {
+            AdminFeedbackScreen(navController = navController)
+        }
     }
 }

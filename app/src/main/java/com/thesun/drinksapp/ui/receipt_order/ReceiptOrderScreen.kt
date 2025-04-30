@@ -37,6 +37,7 @@ import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Address
 import com.thesun.drinksapp.data.model.DrinkOrder
 import com.thesun.drinksapp.data.model.Order
+import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.TextColorHeading
@@ -99,17 +100,19 @@ fun ReceiptOrderContent(
             )
         },
         bottomBar = {
-            if (order != null && order.status != Order.STATUS_COMPLETE) {
-                Button(
-                    onClick = onTrackOrderClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text("Theo dõi đơn hàng", fontSize = 14.sp, color = Color.White)
+            if (!user!!.isAdmin){
+                if (order != null && order.status != Order.STATUS_COMPLETE) {
+                    Button(
+                        onClick = onTrackOrderClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text("Theo dõi đơn hàng", fontSize = 14.sp, color = Color.White)
+                    }
                 }
             }
         },

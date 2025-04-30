@@ -62,7 +62,7 @@ class LoginViewModel @Inject constructor(
                         }
                         _loginState.value = LoginState.Success
                     } else {
-                        _loginState.value = LoginState.Error("Lỗi")
+                        _loginState.value = LoginState.Error("Tài khoản hoặc mật khẩu không chính xác !")
                     }
                 }
         }
