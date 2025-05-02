@@ -2,11 +2,15 @@ package com.thesun.drinksapp.navigation
 
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -30,6 +34,7 @@ import com.thesun.drinksapp.ui.detail_drink.DrinkDetailScreen
 import com.thesun.drinksapp.ui.feedback.FeedbackScreen
 import com.thesun.drinksapp.ui.forgot_password.ForgotPasswordScreen
 import com.thesun.drinksapp.ui.login.LoginScreen
+import com.thesun.drinksapp.ui.login.LoginViewModel
 import com.thesun.drinksapp.ui.payment.PaymentScreen
 import com.thesun.drinksapp.ui.rating_reviews.RatingReviewScreen
 import com.thesun.drinksapp.ui.receipt_order.ReceiptOrderScreen

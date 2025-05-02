@@ -18,6 +18,13 @@ class AccountViewModel @Inject constructor() : ViewModel() {
     private val _userEmail = MutableStateFlow<String?>(null)
     val userEmail: StateFlow<String?> = _userEmail.asStateFlow()
 
+    private val _userName = MutableStateFlow<String?>(null)
+    val userName: StateFlow<String?> = _userName.asStateFlow()
+
+    private val _userImg = MutableStateFlow<String?>(null)
+    val userImg: StateFlow<String?> = _userImg.asStateFlow()
+
+
     init {
         loadUserEmail()
     }
@@ -25,6 +32,8 @@ class AccountViewModel @Inject constructor() : ViewModel() {
     private fun loadUserEmail() {
         viewModelScope.launch {
             _userEmail.value = user?.email
+            _userName.value = user?.userName
+            _userImg.value = user?.profilePictureUrl
         }
     }
 

@@ -24,6 +24,7 @@ googleServices = "4.4.2"
 firebaseBom = "33.4.0"
 gson = "2.10.1"
 materialIconsExtended = "1.7.8"
+playServicesAuthVersion = "21.3.0"
 
 [libraries]
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerVersion" }
@@ -59,6 +60,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-database = { group = "com.google.firebase", name = "firebase-database" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuthVersion" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

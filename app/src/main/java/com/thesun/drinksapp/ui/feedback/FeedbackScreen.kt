@@ -39,6 +39,7 @@ fun FeedbackScreen(
     viewModel: FeedbackViewModel = hiltViewModel()
 ) {
     val userEmail by viewModel.userEmail.collectAsState()
+    val userName by viewModel.userName.collectAsState()
     val feedbackState by viewModel.feedbackState.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
 
@@ -77,6 +78,7 @@ fun FeedbackScreen(
     ) { padding ->
         FeedbackContent(
             userEmail = userEmail,
+            userName = userName,
             feedbackState = feedbackState,
             onNameChange = viewModel::updateName,
             onPhoneChange = viewModel::updatePhone,
@@ -94,6 +96,7 @@ fun FeedbackScreen(
 @Composable
 fun FeedbackContent(
     userEmail: String?,
+    userName: String?,
     feedbackState: FeedbackState,
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
@@ -125,13 +128,14 @@ fun FeedbackContent(
                     color = TextColorHeading
                 )
                 OutlinedTextField(
-                    value = feedbackState.name,
+                    value = userName ?: feedbackState.name,
                     onValueChange = onNameChange,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 5.dp),
                     textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                     singleLine = true,
+                    enabled = userName == null,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -240,6 +244,7 @@ fun FeedbackContent(
 fun FeedbackContentPreview() {
     FeedbackContent(
         userEmail = "user@example.com",
+        userName = "John Doe",
         feedbackState = FeedbackState(
             name = "John Doe",
             phone = "0123456789",

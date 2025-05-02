@@ -1,6 +1,8 @@
 package com.thesun.drinksapp.ui.login
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +34,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import com.thesun.drinksapp.ui.theme.ColorAccent
@@ -64,27 +73,60 @@ fun LoginScreen(
     navController: NavController,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val loginState by loginViewModel.loginState.collectAsState()
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.web_client_id))
+        .requestEmail()
+        .build()
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            loginViewModel.signInWithGoogle(account)
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Đăng nhập Google thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
     LoginScreenUI(
         onLogin = { email, password, isAdmin -> loginViewModel.login(email, password, isAdmin) },
         onForgotPassword = { navController.navigate("forgot_password") },
         onRegister = { navController.navigate("register") },
+        onSignInClick = {
+            val signInIntent = googleSignInClient.signInIntent
+            launcher.launch(signInIntent)
+        },
         isLoading = loginState is LoginState.Loading
     )
-    loginState?.let { state ->
-        when (state) {
-            is LoginState.Success -> {
-                if (user!!.isAdmin){
-                    navController.navigate("role_admin")
-                } else {
-                    navController.navigate("role_user")
-                }
-            }
 
-            is LoginState.Error -> {
-                Toast.makeText(LocalContext.current, state.message, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(loginState) {
+        loginState?.let { state ->
+            when (state) {
+                is LoginState.Success -> {
+                    if (user!!.isAdmin) {
+                        navController.navigate("role_admin") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("role_user") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        }
+                    }
+                    loginViewModel.resetLoginState()
+                }
+                is LoginState.Error -> {
+                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                    loginViewModel.resetLoginState()
+                }
+                else -> Unit
             }
-            else -> Unit
         }
     }
 }
@@ -94,12 +136,14 @@ internal fun LoginScreenUI(
     onLogin: (email: String, password: String, isAdmin: Boolean) -> Unit,
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
+    onSignInClick: () -> Unit,
     isLoading: Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
     var selectedRole by remember { mutableStateOf(context.getString(R.string.user)) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -147,9 +191,8 @@ internal fun LoginScreenUI(
                     unfocusedBorderColor = ColorAccent,
                 ),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth(),
-
-                )
+                modifier = Modifier.fillMaxWidth()
+            )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = context.getString(R.string.password),
@@ -170,7 +213,8 @@ internal fun LoginScreenUI(
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Password),
+                    keyboardType = KeyboardType.Password
+                ),
                 maxLines = 1,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -218,10 +262,39 @@ internal fun LoginScreenUI(
                 Text(
                     text = context.getString(R.string.login),
                     fontSize = 14.sp,
-                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            if (selectedRole == context.getString(R.string.user)){
+                Button(
+                    onClick = onSignInClick,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ColorPrimaryDark,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Image(
+                            painter = painterResource(R.drawable.google_icon),
+                            contentDescription = "Google Icon",
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Text(
+                            text = "Đăng nhập bằng Google",
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -277,7 +350,6 @@ internal fun LoginScreenUI(
             }
         }
     }
-
 }
 
 @Composable
@@ -310,7 +382,6 @@ fun RoleSelection(
     }
 }
 
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
@@ -318,6 +389,7 @@ fun LoginScreenPreview() {
         onLogin = { _, _, _ -> },
         onForgotPassword = {},
         onRegister = {},
+        onSignInClick = {},
         isLoading = false
     )
 }

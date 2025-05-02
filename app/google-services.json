@@ -13,7 +13,20 @@
           "package_name": "com.thesun.cafemanager"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "642392992746-g4lvju1cs0dantuv6v1i138ospdpva5b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thesun.cafemanager",
+            "certificate_hash": "52b8f8de75464f401075339b7c7cfda33c11223d"
+          }
+        },
+        {
+          "client_id": "642392992746-d3a9qr78g51pkbgs4q5cakuk5b9pu8fq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBYi6VnETXvshg4Iyt7nCwofjyFyCIkx1Q"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642392992746-d3a9qr78g51pkbgs4q5cakuk5b9pu8fq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -32,7 +50,20 @@
           "package_name": "com.thesun.drinksapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "642392992746-f9hqn89envulnlooc2mgssf9ch3m8ff5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thesun.drinksapp",
+            "certificate_hash": "52b8f8de75464f401075339b7c7cfda33c11223d"
+          }
+        },
+        {
+          "client_id": "642392992746-d3a9qr78g51pkbgs4q5cakuk5b9pu8fq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBYi6VnETXvshg4Iyt7nCwofjyFyCIkx1Q"
@@ -40,7 +71,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642392992746-d3a9qr78g51pkbgs4q5cakuk5b9pu8fq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

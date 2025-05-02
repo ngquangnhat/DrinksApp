@@ -31,6 +31,14 @@ class FeedbackViewModel @Inject constructor(
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
+    private val _userName = MutableStateFlow<String?>(null)
+    val userName: StateFlow<String?> = _userName.asStateFlow()
+
+    private val _userProfileImage = MutableStateFlow<String?>(null)
+    val userProfileImage: StateFlow<String?> = _userProfileImage.asStateFlow()
+
+    var feedback: Feedback? = null
+
     init {
         loadUserEmail()
     }
@@ -38,6 +46,8 @@ class FeedbackViewModel @Inject constructor(
     private fun loadUserEmail() {
         viewModelScope.launch {
             _userEmail.value = user?.email
+            _userProfileImage.value = user?.profilePictureUrl
+            _userName.value = user?.userName
         }
     }
 
@@ -57,7 +67,7 @@ class FeedbackViewModel @Inject constructor(
     }
 
     fun sendFeedback(onSuccess: () -> Unit) {
-        val name = _feedbackState.value.name
+        val name = _userName.value ?: ""
         val phone = _feedbackState.value.phone
         val comment = _feedbackState.value.comment
         val email = _userEmail.value ?: ""
@@ -72,7 +82,11 @@ class FeedbackViewModel @Inject constructor(
         }
 
         _isLoading.value = true
-        val feedback = Feedback(name, phone, email, comment)
+        feedback = if (user?.profilePictureUrl == null || user?.userName == null){
+            Feedback(name, phone, email, comment)
+        } else {
+            Feedback(name, phone, email, _userName.value, _userProfileImage.value, comment)
+        }
         viewModelScope.launch {
             feedbackRepository.getFeedbackRef()
                 .child(System.currentTimeMillis().toString())

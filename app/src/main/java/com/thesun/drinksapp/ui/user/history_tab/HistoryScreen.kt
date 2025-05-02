@@ -248,11 +248,15 @@ fun OrderItem(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(bottom = 10.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_avatar_default),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.Unspecified
+                        AsyncImage(
+                            model = order.profilePictureUrl ?: R.drawable.ic_avatar_default,
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(R.drawable.ic_avatar_default),
+                            error = painterResource(R.drawable.ic_avatar_default)
                         )
                         Text(
                             text = order.userEmail ?: "",

@@ -5,6 +5,7 @@ import com.thesun.drinksapp.utils.StringUtil.isEmpty
 data class Order(
     var id: Long = 0,
     var userEmail: String? = null,
+    val profilePictureUrl: String? = null,
     var dateTime: String? = null,
     var drinks: List<DrinkOrder>? = null,
     var price: Int = 0,

@@ -156,7 +156,7 @@ fun FeedbackItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = R.drawable.ic_avatar_default,
+                model = feedback.profilePictureUrl ?: R.drawable.ic_avatar_default,
                 contentDescription = "Avatar",
                 modifier = Modifier
                     .size(40.dp)

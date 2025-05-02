@@ -3,6 +3,7 @@ package com.thesun.drinksapp.ui.user.profile_tab
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -10,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
@@ -30,6 +34,9 @@ fun AccountScreen(
     viewModel: AccountViewModel = viewModel()
 ) {
     val userEmail = viewModel.userEmail.collectAsState().value
+    val userName = viewModel.userName.collectAsState().value
+    val profilePictureUrl = viewModel.userImg.collectAsState().value
+
     Column {
         Divider(
             color = Color(0xFFE0E0E0),
@@ -37,6 +44,8 @@ fun AccountScreen(
         )
         AccountContent(
             userEmail = userEmail,
+            userName = userName,
+            profilePictureUrl = profilePictureUrl,
             onFeedbackClick = { navController.navigate("feedback") },
             onContactClick = { navController.navigate("contact") },
             onChangePasswordClick = { navController.navigate("change_password") },
@@ -55,6 +64,8 @@ fun AccountScreen(
 @Composable
 fun AccountContent(
     userEmail: String?,
+    userName: String? = null,
+    profilePictureUrl: String? = null,
     onFeedbackClick: () -> Unit,
     onContactClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
@@ -67,6 +78,33 @@ fun AccountContent(
             .background(Color.White)
             .padding(16.dp)
     ) {
+        AsyncImage(
+            model = profilePictureUrl ?: R.drawable.ic_avatar_default,
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .size(60.dp)
+                .clip(CircleShape)
+                .align(Alignment.CenterHorizontally),
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(R.drawable.ic_avatar_default),
+            error = painterResource(R.drawable.ic_avatar_default)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        if (userName != null) {
+            Text(
+                text = "Tên người dùng",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorPrimaryDark
+            )
+            Text(
+                text = userName,
+                fontSize = 14.sp,
+                color = TextColorHeading,
+                modifier = Modifier.padding(top = 5.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
         Text(
             text = "Email",
             fontSize = 16.sp,
@@ -144,6 +182,7 @@ private fun AccountItem(
 fun AccountContentPreview() {
     AccountContent(
         userEmail = "user@example.com",
+        userName = "John Doe",
         onFeedbackClick = {},
         onContactClick = {},
         onChangePasswordClick = {},

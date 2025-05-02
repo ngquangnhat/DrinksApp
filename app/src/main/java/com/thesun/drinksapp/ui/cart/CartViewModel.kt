@@ -115,6 +115,7 @@ class CartViewModel @Inject constructor(
         val order = Order(
             id = System.currentTimeMillis(),
             userEmail = user?.email,
+            profilePictureUrl = user?.profilePictureUrl,
             dateTime = System.currentTimeMillis().toString(),
             drinks = _cartItems.value.map {
                 DrinkOrder(it.name, it.option, it.count, it.priceOneDrink, it.image)

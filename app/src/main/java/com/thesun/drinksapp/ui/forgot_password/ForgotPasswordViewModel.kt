@@ -6,8 +6,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.thesun.drinksapp.R
-import com.thesun.drinksapp.data.model.User
-import com.thesun.drinksapp.prefs.DataStoreManager
 import com.thesun.drinksapp.ui.login.LoginState
 import com.thesun.drinksapp.utils.StringUtil.isEmpty
 import com.thesun.drinksapp.utils.StringUtil.isValidEmail
