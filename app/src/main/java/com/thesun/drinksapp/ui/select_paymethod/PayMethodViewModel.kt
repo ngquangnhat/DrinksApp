@@ -26,9 +26,8 @@ class PaymentMethodViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             val methods = listOf(
                 PaymentMethod(1, "Thanh toán tiền mặt", "(Thanh toán khi nhận hàng)", false),
-                PaymentMethod(2, "Credit or debit card", "(Thẻ Visa hoặc Mastercard)", false),
-                PaymentMethod(3, "Chuyển khoản ngân hàng", "(Tự động xác nhận)", false),
-                PaymentMethod(4, "ZaloPay", "(Tự động xác nhận)", false)
+                PaymentMethod(2, "Credit hoặc debit card", "(Thẻ Visa hoặc Mastercard)", false),
+                PaymentMethod(3, "Ví điện tử MoMo", "(Tự động xác nhận)", false)
             )
 
             _paymentMethods.value = methods.map { method ->

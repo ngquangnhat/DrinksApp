@@ -1,13 +1,16 @@
 package com.thesun.drinksapp.ui.cart
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,13 +26,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,17 +45,33 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.gson.Gson
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
+import com.stripe.android.paymentsheet.rememberPaymentSheet
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.Address
 import com.thesun.drinksapp.data.model.Drink
+import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.PaymentMethod
 import com.thesun.drinksapp.data.model.Voucher
+import com.thesun.drinksapp.data.remote.ApiInterface
 import com.thesun.drinksapp.ui.theme.BgFilter
 import com.thesun.drinksapp.ui.theme.ColorAccent
 import com.thesun.drinksapp.ui.theme.ColorPrimary
 import com.thesun.drinksapp.ui.theme.ColorPrimaryDark
 import com.thesun.drinksapp.ui.theme.TextColorHeading
 import com.thesun.drinksapp.utils.Constant
+import com.thesun.drinksapp.utils.Constant.TYPE_CREDIT
+import com.thesun.drinksapp.utils.Constant.TYPE_MOMO
+import com.thesun.drinksapp.utils.Utils.PUBLIC_KEY
+import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import vn.momo.momo_partner.AppMoMoLib
+import vn.momo.momo_partner.MoMoParameterNamePayment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,10 +86,67 @@ fun CartScreen(
     val totalPrice by viewModel.totalPrice
     val itemCount by viewModel.itemCount
     val toastMessage by viewModel.toastMessage.collectAsState()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val apiInterface = viewModel.apiInterface
+
+    LaunchedEffect(Unit) {
+        AppMoMoLib.getInstance().setEnvironment(AppMoMoLib.ENVIRONMENT.DEVELOPMENT)
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            PaymentConfiguration.init(context, PUBLIC_KEY)
+            Log.d("CartScreen", "Stripe initialized successfully with pk_test")
+        } catch (e: Exception) {
+            Log.e("CartScreen", "Stripe initialization failed: ${e.message}")
+            Toast.makeText(context, "Lỗi khởi tạo Stripe: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val paymentSheet = rememberPaymentSheet { result ->
+        when (result) {
+            is PaymentSheetResult.Completed -> {
+                Toast.makeText(context, "Thanh toán Visa/Mastercard thành công", Toast.LENGTH_SHORT).show()
+                val order = viewModel.checkout()
+                if (order != null) {
+                    navController.popBackStack()
+                    navController.navigate("payment/${Uri.encode(Gson().toJson(order))}")
+                }
+            }
+            is PaymentSheetResult.Canceled -> {
+                Toast.makeText(context, "Thanh toán bị hủy", Toast.LENGTH_SHORT).show()
+            }
+            is PaymentSheetResult.Failed -> {
+                Toast.makeText(context, "Thanh toán thất bại: ${result.error.message}", Toast.LENGTH_SHORT).show()
+                Log.e("CartScreen", "Payment failed: ${result.error.message}")
+            }
+        }
+    }
+
+    val momoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val data = result.data
+        if (data != null) {
+            val status = data.getIntExtra("status", -1)
+            val message = data.getStringExtra("message") ?: "Lỗi không xác định"
+            if (status == 0) {
+                Toast.makeText(context, "Thanh toán MoMo thành công", Toast.LENGTH_SHORT).show()
+                val order = viewModel.checkout()
+                if (order != null) {
+                    navController.popBackStack()
+                    navController.navigate("payment/${Uri.encode(Gson().toJson(order))}")
+                }
+            } else {
+                Toast.makeText(context, "Thanh toán MoMo thất bại: $message", Toast.LENGTH_SHORT).show()
+                Log.e("CartScreen", "MoMo payment failed: $message")
+            }
+        }
+    }
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
-            Toast.makeText(navController.context, it, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             viewModel.clearToastMessage()
         }
     }
@@ -113,10 +190,21 @@ fun CartScreen(
             navController.navigate("voucher/$selectedId/$amount")
         },
         onCheckoutClick = {
-            viewModel.checkout { order ->
-                val orderJson = Uri.encode(Gson().toJson(order))
-                navController.popBackStack()
-                navController.navigate("payment/$orderJson")
+            val order = viewModel.checkout()
+            if (order != null) {
+                when (paymentMethod?.id) {
+                    TYPE_MOMO -> initiateMoMoPayment(order, momoLauncher, context)
+                    TYPE_CREDIT -> coroutineScope.launch {
+                        initiateStripePayment(order, paymentSheet, apiInterface, context)
+                    }
+                    else -> {
+                        val orderJson = Uri.encode(Gson().toJson(order))
+                        navController.popBackStack()
+                        navController.navigate("payment/$orderJson")
+                    }
+                }
+            } else {
+                Log.e("CartScreen", "Checkout failed: Order is null")
             }
         },
         onDeleteItem = { drink, position -> viewModel.deleteCartItem(drink, position) },
@@ -126,6 +214,102 @@ fun CartScreen(
         },
         onBackClick = { navController.popBackStack() },
     )
+}
+
+private fun initiateMoMoPayment(
+    order: Order,
+    launcher: ManagedActivityResultLauncher<android.content.Intent, androidx.activity.result.ActivityResult>,
+    context: android.content.Context
+) {
+    AppMoMoLib.getInstance().setAction(AppMoMoLib.ACTION.PAYMENT)
+    AppMoMoLib.getInstance().setActionType(AppMoMoLib.ACTION_TYPE.GET_TOKEN)
+
+    val eventValue = HashMap<String, Any>()
+    eventValue[MoMoParameterNamePayment.MERCHANT_NAME] = "DrinksApp"
+    eventValue[MoMoParameterNamePayment.MERCHANT_CODE] = "YOUR_MOMO_PARTNER_CODE" // Thay bằng partnerCode
+    eventValue[MoMoParameterNamePayment.AMOUNT] = order.total
+    eventValue[MoMoParameterNamePayment.DESCRIPTION] = "Thanh toán đơn hàng DrinksApp #${order.id}"
+    eventValue[MoMoParameterNamePayment.MERCHANT_NAME_LABEL] = "Nhà cung cấp"
+    eventValue[MoMoParameterNamePayment.FEE] = 0
+    eventValue[MoMoParameterNamePayment.REQUEST_TYPE] = "payment"
+    eventValue[MoMoParameterNamePayment.LANGUAGE] = "vi"
+
+    val objExtra = JSONObject()
+    try {
+        objExtra.put("orderId", order.id.toString())
+        objExtra.put("appScheme", "YOUR_APP_SCHEME") // Thay bằng appScheme
+    } catch (e: org.json.JSONException) {
+        e.printStackTrace()
+    }
+    eventValue[MoMoParameterNamePayment.EXTRA_DATA] = objExtra.toString()
+
+    AppMoMoLib.getInstance().requestMoMoCallBack(context as android.app.Activity, eventValue)
+}
+
+private suspend fun initiateStripePayment(
+    order: Order,
+    paymentSheet: PaymentSheet,
+    apiInterface: ApiInterface,
+    context: android.content.Context
+) {
+    Log.d("CartScreen", "Initiating Stripe payment for amount: ${order.total * 1000} VND")
+    val paymentData = createPaymentIntent(order.total, apiInterface)
+    if (paymentData != null) {
+        val (clientSecret, ephemeralKey, customerId) = paymentData
+        Log.d("CartScreen", "PaymentIntent created with client_secret: $clientSecret, ephemeralKey: $ephemeralKey, customerId: $customerId")
+        paymentSheet.presentWithPaymentIntent(
+            clientSecret,
+            PaymentSheet.Configuration(
+                merchantDisplayName = "DrinksApp",
+                customer = PaymentSheet.CustomerConfiguration(
+                    id = customerId,
+                    ephemeralKeySecret = ephemeralKey
+                ),
+                allowsDelayedPaymentMethods = true
+            )
+        )
+    } else {
+        Toast.makeText(context, "Không thể khởi tạo thanh toán Stripe", Toast.LENGTH_SHORT).show()
+        Log.e("CartScreen", "Failed to create PaymentIntent")
+    }
+}
+
+private suspend fun createPaymentIntent(amount: Int, apiInterface: ApiInterface): Triple<String, String, String>? = withContext(Dispatchers.IO) {
+    try {
+        val customerResponse = apiInterface.getCustomer()
+        if (!customerResponse.isSuccessful || customerResponse.body()?.id == null) {
+            Log.e("CartScreen", "Failed to get customer: ${customerResponse.code()}, ${customerResponse.errorBody()?.string()}")
+            return@withContext null
+        }
+        val customerId = customerResponse.body()!!.id
+        Log.d("CartScreen", "Customer ID: $customerId")
+
+        val ephemeralKeyResponse = apiInterface.getEphemeralKey(customerId)
+        if (!ephemeralKeyResponse.isSuccessful || ephemeralKeyResponse.body()?.id == null) {
+            Log.e("CartScreen", "Failed to get ephemeral key: ${ephemeralKeyResponse.code()}, ${ephemeralKeyResponse.errorBody()?.string()}")
+            return@withContext null
+        }
+        val ephemeralKey = ephemeralKeyResponse.body()!!.secret
+        Log.d("CartScreen", "Ephemeral Key: $ephemeralKey")
+
+        val paymentIntentResponse = apiInterface.getPaymentIntent(
+            customer = customerId,
+            amount = (amount * 1000).toString(),
+            currency = "vnd",
+            automaticPay = true
+        )
+        if (!paymentIntentResponse.isSuccessful || paymentIntentResponse.body()?.client_secret == null) {
+            Log.e("CartScreen", "Failed to create PaymentIntent: ${paymentIntentResponse.code()}, ${paymentIntentResponse.errorBody()?.string()}")
+            return@withContext null
+        }
+        val clientSecret = paymentIntentResponse.body()!!.client_secret
+        Log.d("CartScreen", "PaymentIntent client_secret: $clientSecret")
+
+        Triple(clientSecret, ephemeralKey, customerId)
+    } catch (e: Exception) {
+        Log.e("CartScreen", "Exception in createPaymentIntent: ${e.message}")
+        null
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -201,7 +385,7 @@ fun CartContent(
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
-            ){
+            ) {
                 InfoSection(
                     title = "Phương thức thanh toán",
                     value = paymentMethod?.name ?: "Chưa chọn phương thức thanh toán",
@@ -230,7 +414,6 @@ fun CartContent(
             )
         }
     }
-
 }
 
 @Composable
@@ -413,8 +596,7 @@ private fun CartItem(
                             ) {
                                 Text(
                                     text = "-",
-                                    modifier = Modifier
-                                        .align(Alignment.Center),
+                                    modifier = Modifier.align(Alignment.Center),
                                     fontSize = 18.sp
                                 )
                             }
@@ -467,7 +649,6 @@ private fun CartItem(
             modifier = Modifier.padding(top = 12.dp)
         )
     }
-
 }
 
 @Composable
@@ -683,18 +864,18 @@ fun CartContentPreview() {
                 Drink(
                     id = 1,
                     name = "Trà sữa",
-                    priceOneDrink = 30,
+                    priceOneDrink = 30000,
                     count = 2,
-                    totalPrice = 60,
+                    totalPrice = 60000,
                     option = "Ít đường",
                     image = "https://example.com/tra-sua.jpg"
                 ),
                 Drink(
                     id = 2,
                     name = "Cà phê",
-                    priceOneDrink = 20,
+                    priceOneDrink = 20000,
                     count = 1,
-                    totalPrice = 20,
+                    totalPrice = 20000,
                     option = "Đen",
                     image = "https://example.com/ca-phe.jpg"
                 )
@@ -702,7 +883,7 @@ fun CartContentPreview() {
             paymentMethod = PaymentMethod(id = 1, name = "Tiền mặt"),
             address = Address(id = 1, address = "123 Đường Láng, Hà Nội"),
             voucher = Voucher(id = 1, discount = 10),
-            totalPrice = 70,
+            totalPrice = 70000,
             itemCount = 2,
             onBackClick = {},
             onAddOrderClick = {},

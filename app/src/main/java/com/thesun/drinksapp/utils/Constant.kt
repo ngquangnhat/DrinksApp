@@ -15,8 +15,7 @@ object Constant {
     const val AMOUNT_VALUE = "amount_value"
     const val TYPE_GOPAY = 1
     const val TYPE_CREDIT = 2
-    const val TYPE_BANK = 3
-    const val TYPE_ZALO_PAY = 4
+    const val TYPE_MOMO = 3
     const val ADMIN_EMAIL_FORMAT = "@admin.com"
     const val KEY_INTENT_VOUCHER_OBJECT = "voucher_object"
     const val KEY_INTENT_TOPPING_OBJECT = "color_object"

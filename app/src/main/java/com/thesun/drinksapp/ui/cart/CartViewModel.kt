@@ -12,7 +12,7 @@ import com.thesun.drinksapp.data.model.DrinkOrder
 import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.model.PaymentMethod
 import com.thesun.drinksapp.data.model.Voucher
-import com.thesun.drinksapp.data.repository.DrinkRepository
+import com.thesun.drinksapp.data.remote.ApiInterface
 import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CartViewModel @Inject constructor(
-    private val drinkDAO: DrinkDAO
+    private val drinkDAO: DrinkDAO,
+    val apiInterface: ApiInterface
 ) : ViewModel() {
 
     private val _cartItems = mutableStateOf<List<Drink>>(emptyList())
@@ -98,21 +99,21 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    fun checkout(navigateToPayment: (Order) -> Unit) {
+    fun checkout(): Order? {
         if (_cartItems.value.isEmpty()) {
             _toastMessage.value = "Giỏ hàng trống"
-            return
+            return null
         }
         if (_paymentMethod.value == null) {
             _toastMessage.value = "Vui lòng chọn phương thức thanh toán"
-            return
+            return null
         }
         if (_address.value == null) {
             _toastMessage.value = "Vui lòng chọn địa chỉ"
-            return
+            return null
         }
 
-        val order = Order(
+        return Order(
             id = System.currentTimeMillis(),
             userEmail = user?.email,
             profilePictureUrl = user?.profilePictureUrl,
@@ -127,7 +128,6 @@ class CartViewModel @Inject constructor(
             address = _address.value,
             status = Order.STATUS_NEW
         )
-        navigateToPayment(order)
     }
 
     private fun calculateTotalPrice() {

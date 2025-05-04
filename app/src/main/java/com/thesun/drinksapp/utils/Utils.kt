@@ -2,10 +2,13 @@ package com.thesun.drinksapp.utils
 
 import android.app.Activity
 import android.view.inputmethod.InputMethodManager
+import com.thesun.drinksapp.BuildConfig
 import java.text.Normalizer
 import java.util.regex.Pattern
 
 object Utils {
+    const val PUBLIC_KEY = BuildConfig.STRIPE_PUBLIC_KEY
+    const val SECRET_KEY = BuildConfig.STRIPE_SECRET_KEY
     @JvmStatic
     fun hideSoftKeyboard(activity: Activity) {
         try {

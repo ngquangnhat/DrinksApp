@@ -22,6 +22,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/img_about_us"
         android:label="@string/app_name"
+        tools:replace="android:theme"
         android:roundIcon="@drawable/img_about_us"
         android:supportsRtl="true"
         android:theme="@style/Theme.DrinksApp"

@@ -127,8 +127,7 @@ fun PaymentMethodItem(
                     when (paymentMethod.id) {
                         Constant.TYPE_GOPAY -> R.drawable.ic_gopay
                         Constant.TYPE_CREDIT -> R.drawable.ic_credit
-                        Constant.TYPE_BANK -> R.drawable.ic_bank
-                        Constant.TYPE_ZALO_PAY -> R.drawable.ic_zalopay
+                        Constant.TYPE_MOMO -> R.drawable.ic_momo
                         else -> R.drawable.ic_gopay
                     }
                 ),
@@ -187,9 +186,8 @@ fun PaymentMethodContentPreview() {
         PaymentMethodContent(
             paymentMethods = listOf(
                 PaymentMethod(1, "Thanh toán tiền mặt", "(Thanh toán khi nhận hàng)", true),
-                PaymentMethod(2, "Credit or debit card", "(Thẻ Visa hoặc Mastercard)", false),
-                PaymentMethod(3, "Chuyển khoản ngân hàng", "(Tự động xác nhận)", false),
-                PaymentMethod(4, "ZaloPay", "(Tự động xác nhận)", false)
+                PaymentMethod(2, "Credit hoặc debit card", "(Thẻ Visa hoặc Mastercard)", false),
+                PaymentMethod(3, "Ví điện tử MoMo", "(Tự động xác nhận)", false)
             ),
             onBackClick = {},
             onPaymentMethodClick = {}

@@ -24,6 +24,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"${property("PUBLIC_KEY")}\"")
+        buildConfigField("String", "STRIPE_SECRET_KEY", "\"${property("SECRET_KEY")}\"")
+
     }
     hilt {
         enableAggregatingTask = false
@@ -46,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -69,6 +73,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation (libs.material)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.database)
@@ -87,6 +92,18 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //Momo SDK
+    implementation("com.github.momo-wallet:mobile-sdk:1.0.7") {
+        exclude(group = "com.android.support")
+    }
+    //Stripe SDK
+    implementation("com.stripe:stripe-android:21.12.0")
+    implementation("com.stripe:financial-connections:21.12.0")
 
     //Coil
     implementation(libs.coil.compose)
