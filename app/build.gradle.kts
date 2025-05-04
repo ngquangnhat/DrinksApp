@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -24,8 +26,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"${property("PUBLIC_KEY")}\"")
-        buildConfigField("String", "STRIPE_SECRET_KEY", "\"${property("SECRET_KEY")}\"")
+        buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"${getPropertyFromLocal("PUBLIC_KEY")}\"")
+        buildConfigField("String", "STRIPE_SECRET_KEY", "\"${getPropertyFromLocal("SECRET_KEY")}\"")
 
     }
     hilt {
@@ -59,6 +61,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+fun getPropertyFromLocal(propertyName: String): String {
+    val props = Properties()
+    file("../local.properties").inputStream().use { stream ->
+        props.load(stream)
+    }
+    return props.getProperty(propertyName) ?: ""
 }
 
 dependencies {
