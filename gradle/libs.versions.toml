@@ -4,6 +4,7 @@ accompanistPager = "0.30.1"
 accompanistPagerVersion = "0.32.0"
 agp = "8.5.2"
 coilCompose = "2.4.0"
+firebaseMessagingVersion = "24.1.1"
 firebaseStorageKtxVersion = "21.0.1"
 foundationVersion = "1.7.8"
 kotlin = "2.1.0"
@@ -33,6 +34,7 @@ accompanist-pager-v0320 = { module = "com.google.accompanist:accompanist-pager",
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessagingVersion" }
 firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx", version.ref = "firebaseStorageKtxVersion" }
 google-accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanistNavigationAnimationVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

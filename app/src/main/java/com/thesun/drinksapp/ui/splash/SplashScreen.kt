@@ -80,11 +80,10 @@ fun SplashScreenUI() {
             painter = painterResource(id = R.drawable.ic_logo),
             contentDescription = "Logo",
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopStart)
-                .padding(top = 150.dp)
-                .padding(horizontal = 50.dp),
-            contentScale = ContentScale.Crop
+                .fillMaxWidth(0.8f)
+                .align(Alignment.TopCenter)
+                .padding(top = 150.dp),
+            contentScale = ContentScale.FillWidth
         )
         LinearProgressIndicator(
             modifier = Modifier

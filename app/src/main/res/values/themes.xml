@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.DrinksApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.DrinksApp" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorSecondary">@color/colorAccent</item>

@@ -46,6 +46,9 @@ class FirebaseRepository {
     fun getOrderDetailDatabaseReference(orderId: Long): DatabaseReference {
         return firebaseDatabase.getReference("order/$orderId")
     }
+    fun getUserDatabaseReference(): DatabaseReference {
+        return FirebaseDatabase.getInstance().getReference("users")
+    }
 
     companion object {
         private const val FIREBASE_URL = "https://drinksapp-39163-default-rtdb.firebaseio.com/"

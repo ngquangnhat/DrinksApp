@@ -10,8 +10,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.messaging.FirebaseMessaging
 import com.thesun.drinksapp.R
 import com.thesun.drinksapp.data.model.User
+import com.thesun.drinksapp.data.repository.OrderRepository
 import com.thesun.drinksapp.prefs.DataStoreManager
 import com.thesun.drinksapp.utils.Constant
 import com.thesun.drinksapp.utils.StringUtil.isEmpty
@@ -29,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     application: Application,
+    private val orderRepository: OrderRepository
 ) : AndroidViewModel(application) {
     private val context = application.applicationContext
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -63,6 +66,7 @@ class LoginViewModel @Inject constructor(
                                 this.isAdmin = isAdmin
                             }
                             DataStoreManager.user = userObject
+                            saveFcmToken(it.email ?: "")
                         }
                         _loginState.value = LoginState.Success
                     } else {
@@ -87,6 +91,7 @@ class LoginViewModel @Inject constructor(
                             profilePictureUrl = firebaseUser.photoUrl.toString()
                         )
                         DataStoreManager.user = user
+                        saveFcmToken(firebaseUser.email ?: "")
                         _loginState.value = LoginState.Success
                     } else {
                         _loginState.value = LoginState.Error("Không tìm thấy thông tin người dùng")
@@ -95,6 +100,18 @@ class LoginViewModel @Inject constructor(
                     _loginState.value = LoginState.Error(task.exception?.message ?: "Đăng nhập bằng Google thất bại")
                 }
             }
+    }
+    private fun saveFcmToken(email: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                Log.d("FCM", "Token: $token")
+                orderRepository.saveUserFcmToken(email, token)
+            } else {
+                Log.e("FCM", "Lỗi lấy FCM token: ${task.exception?.message}", task.exception)
+                _loginState.value = LoginState.Error("Không thể lấy FCM token. Vui lòng thử lại sau.")
+            }
+        }
     }
     fun resetLoginState() {
         _loginState.value = null

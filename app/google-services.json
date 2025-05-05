@@ -52,6 +52,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "642392992746-c07l9krh2biorhbclo125qiase9j3k75.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thesun.drinksapp",
+            "certificate_hash": "cac995254598020d93b7ef716659ee91bc3f63be"
+          }
+        },
+        {
           "client_id": "642392992746-f9hqn89envulnlooc2mgssf9ch3m8ff5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

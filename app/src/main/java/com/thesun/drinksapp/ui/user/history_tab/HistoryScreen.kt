@@ -72,10 +72,12 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel = hi
         }
     }
     Column {
-        Divider(
-            color = Color(0xFFE0E0E0),
-            thickness = 1.dp,
-        )
+        if (user?.isAdmin == false){
+            Divider(
+                color = Color(0xFFE0E0E0),
+                thickness = 1.dp,
+            )
+        }
         HistoryContent(
             tabs = tabs,
             viewModel = viewModel,

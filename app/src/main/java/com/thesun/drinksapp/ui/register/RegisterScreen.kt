@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -107,7 +108,7 @@ internal fun RegisterScreenUI(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
-    var selectedRole by remember { mutableStateOf(context.getString(R.string.user)) }
+    val selectedRole by remember { mutableStateOf(context.getString(R.string.user)) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -124,8 +125,8 @@ internal fun RegisterScreenUI(
                 painter = painterResource(R.drawable.ic_logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.7f),
+                contentScale = ContentScale.FillWidth
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -240,9 +241,6 @@ internal fun RegisterScreenUI(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
-            Column {
-                RoleSelection(selectedRole = selectedRole, onRoleSelected = { selectedRole = it })
-            }
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(

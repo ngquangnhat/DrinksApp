@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
     implementation (libs.firebase.storage.ktx)
+    implementation(libs.firebase.messaging)
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
