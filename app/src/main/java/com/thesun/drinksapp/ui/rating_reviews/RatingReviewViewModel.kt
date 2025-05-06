@@ -36,6 +36,9 @@ class RatingReviewViewModel @Inject constructor(
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
+    private val _drinkRatings = MutableStateFlow<List<Rating>>(emptyList())
+    val drinkRatings: StateFlow<List<Rating>> = _drinkRatings.asStateFlow()
+
     private var ratingReview: RatingReview? = null
 
     fun setRatingReview(data: RatingReview?) {
@@ -46,6 +49,20 @@ class RatingReviewViewModel @Inject constructor(
             else -> ""
         }
 
+    }
+
+    fun fetchDrinkRatings(drinkId: String) {
+        viewModelScope.launch {
+            try {
+                val snapshot = ratingReviewRepository.getRatingDrinkRef(drinkId).get().await()
+                val ratings = snapshot.children.mapNotNull { child ->
+                    child.getValue(Rating::class.java)
+                }
+                _drinkRatings.value = ratings
+            } catch (e: Exception) {
+                _toastMessage.value = "Lỗi khi lấy đánh giá: ${e.message}"
+            }
+        }
     }
 
     fun updateRating(newRating: Float) {

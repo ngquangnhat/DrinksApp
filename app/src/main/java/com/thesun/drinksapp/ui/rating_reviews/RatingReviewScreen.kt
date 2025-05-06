@@ -58,14 +58,17 @@ fun RatingReviewScreen(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-
     val rating by viewModel.rating
     val review by viewModel.review
     val message by viewModel.message
     val toastMessage by viewModel.toastMessage.collectAsState()
+    val drinkRatings by viewModel.drinkRatings.collectAsState()
 
     LaunchedEffect(ratingReview) {
         viewModel.setRatingReview(ratingReview)
+        if (ratingReview.type == RatingReview.TYPE_RATING_REVIEW_DRINK) {
+            viewModel.fetchDrinkRatings(ratingReview.id)
+        }
     }
 
     LaunchedEffect(toastMessage) {
@@ -78,7 +81,7 @@ fun RatingReviewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(context.getString(R.string.ratings_and_reviews), fontSize = 18.sp) },
+                title = { Text(context.getString(R.string.ratings_and_reviews), fontSize = 18.sp, fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -99,58 +102,64 @@ fun RatingReviewScreen(
                 .background(Color.White)
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_rating_and_review),
                 contentDescription = null,
-                modifier = Modifier.size(200.dp),
-                contentScale = ContentScale.Crop
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(top = 8.dp),
+                contentScale = ContentScale.Fit
             )
 
             Text(
                 text = message,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = ColorPrimary,
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 12.dp, bottom = 16.dp)
             )
 
             Text(
                 text = context.getString(R.string.label_rating),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
                 color = TextColorHeading,
                 modifier = Modifier
-                    .padding(top = 16.dp)
                     .align(Alignment.Start)
+                    .padding(bottom = 8.dp)
             )
-
             RatingBar(
                 rating = rating,
-                onRatingChanged = { viewModel.updateRating(it) }
+                onRatingChanged = { viewModel.updateRating(it) },
+                modifier = Modifier.width(200.dp)
             )
 
             Text(
                 text = context.getString(R.string.label_review),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
                 color = TextColorHeading,
                 modifier = Modifier
-                    .padding(top = 16.dp)
                     .align(Alignment.Start)
+                    .padding(top = 16.dp, bottom = 8.dp)
             )
-
             TextField(
                 value = review,
                 onValueChange = { viewModel.updateReview(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(top = 8.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(6.dp)),
-                placeholder = { Text(context.getString(R.string.hint_rating_review), fontSize = 14.sp, color = Color.LightGray) },
+                    .height(90.dp)
+                    .border(1.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),
+                placeholder = {
+                    Text(
+                        context.getString(R.string.hint_rating_review),
+                        fontSize = 14.sp,
+                        color = Color.Gray.copy(alpha = 0.5f)
+                    )
+                },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -161,17 +170,17 @@ fun RatingReviewScreen(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done
                 ),
-                maxLines = 4
+                maxLines = 3,
+                textStyle = TextStyle(fontSize = 14.sp)
             )
-
             Text(
                 text = context.getString(R.string.label_review_note),
                 fontSize = 12.sp,
-                color = TextColorHeading,
+                color = TextColorHeading.copy(alpha = 0.7f),
                 style = TextStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 4.dp, bottom = 16.dp)
             )
 
             Button(
@@ -182,19 +191,85 @@ fun RatingReviewScreen(
                 },
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
-                    .padding(top = 32.dp),
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ColorPrimaryDark
-                ),
+                )
             ) {
                 Text(
                     text = context.getString(R.string.label_send_review),
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp)
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
                 )
             }
+
+            if (drinkRatings.isNotEmpty()) {
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    color = Color.Gray.copy(alpha = 0.2f)
+                )
+                Text(
+                    text = "Đánh giá từ người dùng",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = TextColorHeading,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(bottom = 8.dp)
+                )
+                drinkRatings.forEach { rating ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .background(Color.Gray.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Khách hàng",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextColorHeading
+                            )
+                            if (!rating.review.isNullOrEmpty()) {
+                                Text(
+                                    text = rating.review,
+                                    fontSize = 13.sp,
+                                    color = TextColorHeading.copy(alpha = 0.8f),
+                                    modifier = Modifier.padding(top = 4.dp),
+                                    maxLines = 3
+                                )
+                            }
+                        }
+                        Row (
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(
+                                text = rating.rate.toString(),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ColorPrimaryDark
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_star_yellow),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp).offset(y = (-2).dp),
+                                tint = Color(0xFFfbb909)
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -202,44 +277,50 @@ fun RatingReviewScreen(
 @Composable
 fun RatingBar(
     rating: Float,
-    onRatingChanged: (Float) -> Unit
+    onRatingChanged: (Float) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .width(200.dp)
-            .pointerInput(Unit) {
-                detectDragGestures { change, _ ->
-                    change.consume()
-                    val x = change.position.x
-                    val width = size.width.toFloat()
-                    val newRating = (x / width) * 5f
-                    val roundedRating = (newRating * 2).roundToInt() / 2f
-                    onRatingChanged(roundedRating.coerceIn(0f, 5f))
+        modifier = modifier
+            .padding(vertical = 4.dp)
+            .then(
+                if (onRatingChanged == {}) Modifier
+                else Modifier.pointerInput(Unit) {
+                    detectDragGestures { change, _ ->
+                        change.consume()
+                        val x = change.position.x
+                        val width = size.width.toFloat()
+                        val newRating = (x / width) * 5f
+                        val roundedRating = (newRating * 2).roundToInt() / 2f
+                        onRatingChanged(roundedRating.coerceIn(0f, 5f))
+                    }
                 }
-            },
-        horizontalArrangement = Arrangement.Center
+            ),
+        horizontalArrangement = Arrangement.Start
     ) {
         (1..5).forEach { star ->
             val starValue = star.toFloat()
             Box(
                 modifier = Modifier
-                    .size(28.dp)
-                    .clickable {
-                        val newRating = if (rating == starValue - 0.5f) {
-                            starValue
-                        } else if (rating == starValue) {
-                            starValue - 0.5f
-                        } else {
-                            if (rating >= starValue - 0.25f) starValue else starValue - 0.5f
+                    .size(24.dp)
+                    .then(
+                        if (onRatingChanged == {}) Modifier
+                        else Modifier.clickable {
+                            val newRating = if (rating == starValue - 0.5f) {
+                                starValue
+                            } else if (rating == starValue) {
+                                starValue - 0.5f
+                            } else {
+                                if (rating >= starValue - 0.25f) starValue else starValue - 0.5f
+                            }
+                            onRatingChanged(newRating.coerceIn(0f, 5f))
                         }
-                        onRatingChanged(newRating.coerceIn(0f, 5f))
-                    }
+                    )
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_star_gray),
                     contentDescription = null,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(24.dp),
                     tint = Color.LightGray
                 )
                 val fraction = when {
@@ -252,7 +333,7 @@ fun RatingBar(
                         painter = painterResource(id = R.drawable.ic_star_yellow),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(28.dp)
+                            .size(24.dp)
                             .clip(
                                 object : Shape {
                                     override fun createOutline(
@@ -275,7 +356,7 @@ fun RatingBar(
                     )
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
         }
     }
 }
