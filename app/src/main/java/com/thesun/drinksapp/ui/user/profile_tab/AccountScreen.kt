@@ -132,11 +132,13 @@ fun AccountContent(
             text = "Liên hệ",
             onClick = onContactClick,
         )
-        AccountItem(
-            iconRes = R.drawable.ic_manage_account,
-            text = "Đổi mật khẩu",
-            onClick = onChangePasswordClick,
-        )
+        if (userName == null) {
+            AccountItem(
+                iconRes = R.drawable.ic_manage_account,
+                text = "Đổi mật khẩu",
+                onClick = onChangePasswordClick,
+            )
+        }
         AccountItem(
             iconRes = R.drawable.ic_logout,
             text = "Đăng xuất",
