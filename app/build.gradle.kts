@@ -92,6 +92,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     kapt(libs.hilt.compiler)
 
     // Arch Components

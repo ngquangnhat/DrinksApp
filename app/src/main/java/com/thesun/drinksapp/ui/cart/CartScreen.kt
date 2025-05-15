@@ -3,9 +3,6 @@ package com.thesun.drinksapp.ui.cart
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -65,13 +62,9 @@ import com.thesun.drinksapp.utils.Constant
 import com.thesun.drinksapp.utils.Constant.TYPE_CREDIT
 import com.thesun.drinksapp.utils.Constant.TYPE_MOMO
 import com.thesun.drinksapp.utils.Utils.PUBLIC_KEY
-import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import vn.momo.momo_partner.AppMoMoLib
-import vn.momo.momo_partner.MoMoParameterNamePayment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,14 +79,11 @@ fun CartScreen(
     val totalPrice by viewModel.totalPrice
     val itemCount by viewModel.itemCount
     val toastMessage by viewModel.toastMessage.collectAsState()
+    val paymentUrl by viewModel.paymentUrl.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     val apiInterface = viewModel.apiInterface
-
-    LaunchedEffect(Unit) {
-        AppMoMoLib.getInstance().setEnvironment(AppMoMoLib.ENVIRONMENT.DEVELOPMENT)
-    }
 
     LaunchedEffect(Unit) {
         try {
@@ -125,22 +115,10 @@ fun CartScreen(
         }
     }
 
-    val momoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val data = result.data
-        if (data != null) {
-            val status = data.getIntExtra("status", -1)
-            val message = data.getStringExtra("message") ?: "Lỗi không xác định"
-            if (status == 0) {
-                Toast.makeText(context, "Thanh toán MoMo thành công", Toast.LENGTH_SHORT).show()
-                val order = viewModel.checkout()
-                if (order != null) {
-                    navController.popBackStack()
-                    navController.navigate("payment/${Uri.encode(Gson().toJson(order))}")
-                }
-            } else {
-                Toast.makeText(context, "Thanh toán MoMo thất bại: $message", Toast.LENGTH_SHORT).show()
-                Log.e("CartScreen", "MoMo payment failed: $message")
-            }
+    LaunchedEffect(paymentUrl) {
+        paymentUrl?.let { url ->
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
         }
     }
 
@@ -150,6 +128,7 @@ fun CartScreen(
             viewModel.clearToastMessage()
         }
     }
+
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<PaymentMethod?>("selectedPaymentMethod", null)
             ?.collect { selected ->
@@ -168,6 +147,7 @@ fun CartScreen(
                 viewModel.updateVoucher(selected)
             }
     }
+
     CartContent(
         cartItems = cartItems,
         paymentMethod = paymentMethod,
@@ -193,7 +173,7 @@ fun CartScreen(
             val order = viewModel.checkout()
             if (order != null) {
                 when (paymentMethod?.id) {
-                    TYPE_MOMO -> initiateMoMoPayment(order, momoLauncher, context)
+                    TYPE_MOMO -> viewModel.initiateMoMoPayment(order)
                     TYPE_CREDIT -> coroutineScope.launch {
                         initiateStripePayment(order, paymentSheet, apiInterface, context)
                     }
@@ -214,36 +194,6 @@ fun CartScreen(
         },
         onBackClick = { navController.popBackStack() },
     )
-}
-
-private fun initiateMoMoPayment(
-    order: Order,
-    launcher: ManagedActivityResultLauncher<android.content.Intent, androidx.activity.result.ActivityResult>,
-    context: android.content.Context
-) {
-    AppMoMoLib.getInstance().setAction(AppMoMoLib.ACTION.PAYMENT)
-    AppMoMoLib.getInstance().setActionType(AppMoMoLib.ACTION_TYPE.GET_TOKEN)
-
-    val eventValue = HashMap<String, Any>()
-    eventValue[MoMoParameterNamePayment.MERCHANT_NAME] = "DrinksApp"
-    eventValue[MoMoParameterNamePayment.MERCHANT_CODE] = "YOUR_MOMO_PARTNER_CODE" // Thay bằng partnerCode
-    eventValue[MoMoParameterNamePayment.AMOUNT] = order.total
-    eventValue[MoMoParameterNamePayment.DESCRIPTION] = "Thanh toán đơn hàng DrinksApp #${order.id}"
-    eventValue[MoMoParameterNamePayment.MERCHANT_NAME_LABEL] = "Nhà cung cấp"
-    eventValue[MoMoParameterNamePayment.FEE] = 0
-    eventValue[MoMoParameterNamePayment.REQUEST_TYPE] = "payment"
-    eventValue[MoMoParameterNamePayment.LANGUAGE] = "vi"
-
-    val objExtra = JSONObject()
-    try {
-        objExtra.put("orderId", order.id.toString())
-        objExtra.put("appScheme", "YOUR_APP_SCHEME") // Thay bằng appScheme
-    } catch (e: org.json.JSONException) {
-        e.printStackTrace()
-    }
-    eventValue[MoMoParameterNamePayment.EXTRA_DATA] = objExtra.toString()
-
-    AppMoMoLib.getInstance().requestMoMoCallBack(context as android.app.Activity, eventValue)
 }
 
 private suspend fun initiateStripePayment(

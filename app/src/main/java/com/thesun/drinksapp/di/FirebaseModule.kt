@@ -4,6 +4,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.thesun.drinksapp.data.remote.ApiInterface
+import com.thesun.drinksapp.data.remote.MoMoApiService
+import com.thesun.drinksapp.data.remote.RetrofitClient
 import com.thesun.drinksapp.data.repository.FirebaseRepository
 import com.thesun.drinksapp.utils.Utils.SECRET_KEY
 import dagger.Module
@@ -60,5 +62,11 @@ object FirebaseModule {
     @Singleton
     fun provideApiInterface(retrofit: Retrofit): ApiInterface {
         return retrofit.create(ApiInterface::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMoMoApiService(): MoMoApiService {
+        return RetrofitClient.moMoApiService
     }
 }
