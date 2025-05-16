@@ -274,6 +274,13 @@ fun CategoryTabScreen(
         pageCount = { listCategory.size }
     )
     val selectedFilters by selectedFiltersFlow.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (selectedTabIndex != pagerState.currentPage) {
+            selectedTabIndex = pagerState.currentPage
+        }
+    }
 
     Column(
         modifier = Modifier

@@ -106,15 +106,15 @@ fun UserScreenUI(
                             color = Color(0xFF212121)
                         )
                     },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Quay lại",
-                                tint = Color(0xFF212121)
-                            )
-                        }
-                    },
+//                    navigationIcon = {
+//                        IconButton(onClick = { navController.popBackStack() }) {
+//                            Icon(
+//                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                                contentDescription = "Quay lại",
+//                                tint = Color(0xFF212121)
+//                            )
+//                        }
+//                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.White
                     )
