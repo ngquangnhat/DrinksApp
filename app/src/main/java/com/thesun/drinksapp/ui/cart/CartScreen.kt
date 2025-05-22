@@ -172,6 +172,9 @@ fun CartScreen(
         onCheckoutClick = {
             val order = viewModel.checkout()
             if (order != null) {
+                if (paymentMethod?.id == TYPE_MOMO) {
+                    viewModel.saveOrderToPrefs(context, order)
+                }
                 when (paymentMethod?.id) {
                     TYPE_MOMO -> viewModel.initiateMoMoPayment(order)
                     TYPE_CREDIT -> coroutineScope.launch {

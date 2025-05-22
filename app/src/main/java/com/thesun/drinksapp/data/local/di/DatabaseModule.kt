@@ -2,6 +2,8 @@ package com.thesun.drinksapp.data.local.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.thesun.drinksapp.data.local.database.AppDatabase
 import com.thesun.drinksapp.data.local.database.DrinkDAO
 import dagger.Module
@@ -28,6 +30,19 @@ class DatabaseModule {
             appContext,
             AppDatabase::class.java,
             "app_database"
-        ).build()
+        ).addMigrations(object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                            CREATE TABLE cart_state (
+                                orderId INTEGER PRIMARY KEY NOT NULL,
+                                items TEXT NOT NULL,
+                                payment_method TEXT,
+                                address TEXT,
+                                voucher TEXT
+                            )
+                        """)
+            }
+        })
+            .build()
     }
 }

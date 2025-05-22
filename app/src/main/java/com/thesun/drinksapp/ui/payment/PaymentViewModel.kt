@@ -1,5 +1,6 @@
 package com.thesun.drinksapp.ui.payment
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DatabaseError
@@ -7,7 +8,9 @@ import com.google.firebase.database.DatabaseReference
 import com.thesun.drinksapp.data.local.database.DrinkDAO
 import com.thesun.drinksapp.data.model.Order
 import com.thesun.drinksapp.data.repository.OrderRepository
+import com.thesun.drinksapp.prefs.MySharedPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
-    private val drinkDAO: DrinkDAO
+    private val drinkDAO: DrinkDAO,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PaymentUiState>(PaymentUiState.Loading)
@@ -46,6 +50,8 @@ class PaymentViewModel @Inject constructor(
                     } else {
                         viewModelScope.launch {
                             drinkDAO.deleteAllDrink()
+                            val sharedPreferences = MySharedPreferences(context)
+                            sharedPreferences.putStringValue("saved_orders", null)
                             _uiState.value = PaymentUiState.Success(order.id)
                         }
                     }

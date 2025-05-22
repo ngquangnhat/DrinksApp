@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.thesun.drinksapp.data.local.database.DrinkDAO
 import com.thesun.drinksapp.data.model.Address
 import com.thesun.drinksapp.data.model.Drink
@@ -16,6 +17,7 @@ import com.thesun.drinksapp.data.remote.ApiInterface
 import com.thesun.drinksapp.data.remote.MoMoApiService
 import com.thesun.drinksapp.data.remote.MoMoPaymentRequest
 import com.thesun.drinksapp.prefs.DataStoreManager.Companion.user
+import com.thesun.drinksapp.prefs.MySharedPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,6 +150,17 @@ class CartViewModel @Inject constructor(
             address = _address.value,
             status = Order.STATUS_NEW
         )
+    }
+
+    fun saveOrderToPrefs(context: android.content.Context, order: Order) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val sharedPreferences = MySharedPreferences(context)
+                val gson = Gson()
+                val orderJson = gson.toJson(order)
+                sharedPreferences.putStringValue("saved_orders", orderJson)
+            }
+        }
     }
 
     fun initiateMoMoPayment(order: Order) {

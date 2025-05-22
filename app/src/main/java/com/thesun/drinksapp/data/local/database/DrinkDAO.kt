@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.thesun.drinksapp.data.model.CartState
 import com.thesun.drinksapp.data.model.Drink
 import kotlinx.coroutines.flow.Flow
 
@@ -28,4 +29,11 @@ interface DrinkDAO {
 
     @Query("DELETE from drink")
     suspend fun deleteAllDrink()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveCartState(cartState: CartState)
+    @Query("SELECT * FROM cart_state WHERE orderId = :orderId")
+    suspend fun getCartState(orderId: Long): CartState?
+    @Query("DELETE FROM cart_state WHERE orderId = :orderId")
+    suspend fun deleteCartState(orderId: Long)
 }
