@@ -15,6 +15,7 @@ sealed class BottomNavItem(val route: String, val label: String, val icon: Int) 
 sealed class AdminNavItem(val route: String, val icon: Int, val label: String) {
     data object Category : AdminNavItem("categories", R.drawable.ic_nav_category, "Thể loại")
     data object Drink : AdminNavItem("drinks", R.drawable.ic_nav_drink, "Đồ uống")
+    data object Statistics : AdminNavItem("statistics", R.drawable.ic_nav_statistics, "Thống kê")
     data object Order : AdminNavItem("orders", R.drawable.ic_nav_order, "Đơn hàng")
     data object Settings : AdminNavItem("settings", R.drawable.ic_nav_setting, "Cài đặt")
 }
