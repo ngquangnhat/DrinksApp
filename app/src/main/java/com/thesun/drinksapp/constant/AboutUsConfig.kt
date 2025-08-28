@@ -4,7 +4,7 @@ interface AboutUsConfig {
     companion object {
         const val ABOUT_US_TITLE = "Shopfee House"
         const val ABOUT_US_CONTENT = "A cozy drink shop serving refreshing beverages and sweet moments every day."
-        const val ABOUT_US_WEBSITE_TITLE = "Our Website"
+        const val ABOUT_US_WEBSITE_TITLE = "Ghé thăm trang web cửa hàng"
         const val PAGE_FACEBOOK = "fb://page/haui"
         const val LINK_FACEBOOK = "https://www.facebook.com/Ng.QuangNhat.22.11.2003"
         const val LINK_YOUTUBE = "https://www.youtube.com/@PhilippLackner"

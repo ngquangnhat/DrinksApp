@@ -237,7 +237,7 @@ fun AddressItem(
             .fillMaxWidth()
             .padding(horizontal = 10.dp),
         thickness = 1.dp,
-        color = MaterialTheme.colorScheme.outlineVariant
+        color = Color(0xFFE0E0E0)
     )
 }
 

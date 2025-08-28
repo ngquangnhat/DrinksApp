@@ -63,7 +63,7 @@ fun PaymentMethodContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Giỏ hàng",
+                        text = "Phương thức thanh toán",
                         fontSize = 18.sp,
                         color = Color(0xFF212121)
                     )
@@ -174,7 +174,7 @@ fun PaymentMethodItem(
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp),
             thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
+            color = Color(0xFFE0E0E0)
         )
     }
 }

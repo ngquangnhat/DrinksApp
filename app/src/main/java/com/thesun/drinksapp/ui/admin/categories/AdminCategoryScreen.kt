@@ -145,10 +145,15 @@ fun CategoryScreenContent(navController: NavController, viewModel: AdminCategory
             text = { Text(stringResource(R.string.msg_confirm_delete)) },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.deleteCategory(category) {
-                        Toast.makeText(context, context.getString(R.string.msg_delete_category_successfully), Toast.LENGTH_SHORT).show()
-                    }
-                    showDeleteDialog = null
+                    viewModel.deleteCategory(category,
+                        onSuccess = {
+                            Toast.makeText(context, context.getString(R.string.msg_delete_category_successfully), Toast.LENGTH_SHORT).show()
+                            showDeleteDialog = null
+                        },
+                        onError = {
+                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                            showDeleteDialog = null
+                        })
                 }) {
                     Text(stringResource(R.string.action_ok))
                 }

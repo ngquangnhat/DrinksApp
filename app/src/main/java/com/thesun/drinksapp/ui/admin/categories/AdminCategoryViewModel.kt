@@ -9,18 +9,21 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.thesun.drinksapp.data.model.Category
 import com.thesun.drinksapp.data.repository.CategoryRepository
+import com.thesun.drinksapp.data.repository.DrinkRepository
 import com.thesun.drinksapp.utils.StringUtil
 import com.thesun.drinksapp.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class AdminCategoryViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
+    private val drinkRepository: DrinkRepository
 ) : ViewModel() {
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
@@ -91,10 +94,27 @@ class AdminCategoryViewModel @Inject constructor(
         }
     }
 
-    fun deleteCategory(category: Category, onSuccess: () -> Unit) {
-        categoryRepository.getCategoryRef().child(category.id.toString()).removeValue { error, _ ->
-            if (error == null) {
-                onSuccess()
+    fun deleteCategory(category: Category, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val drinksSnapshot = drinkRepository.getDrinkRef()
+                    .orderByChild("category_id")
+                    .equalTo(category.id.toString())
+                    .get()
+                    .await()
+
+                if (drinksSnapshot.exists() && drinksSnapshot.childrenCount > 0) {
+                    onError("Không xóa được danh mục. Có ${drinksSnapshot.childrenCount} đồ uống liên quan.")
+                    return@launch
+                }
+
+                categoryRepository.getCategoryRef()
+                    .child(category.id.toString())
+                    .removeValue { error, _ ->
+                        if (error == null) onSuccess() else onError(error.message ?: "Lỗi xóa danh mục")
+                    }
+            } catch (e: Exception) {
+                onError(e.message ?: "Lỗi kiểm tra đồ uống")
             }
         }
     }

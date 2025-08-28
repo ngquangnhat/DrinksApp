@@ -177,8 +177,8 @@ class AdminAddDrinkViewModel @Inject constructor(
             map["image"] = image.value
             map["banner"] = imageBanner.value
             map["isFeatured"] = isFeatured.value
-            map["categoryId"] = selectedCategory.value!!.id
-            map["categoryName"] = selectedCategory.value!!.name
+            map["category_id"] = selectedCategory.value!!.id
+            map["category_name"] = selectedCategory.value!!.name
             drinkRepository.getDrinkRef()
                 .child(currentDrinkId!!)
                 .updateChildren(map) { error, _ ->
